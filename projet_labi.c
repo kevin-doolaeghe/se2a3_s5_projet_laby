@@ -37,23 +37,23 @@ void destroyMaze(bool** maze) {
 void fillMaze() {
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
-            tab[i][j] = rand() % 2;
+            maze[i][j] = rand() % 2;
         }
     }
 
     // Borders
     for (int i = 0; i < m; i++) {
-        tab[i][0] = 1;
-        tab[i][m - 1] = 1;
+        maze[i][0] = 1;
+        maze[i][m - 1] = 1;
     }
 
     for (int i = 0; i < n; i++) {
-        tab[0][i] = 1;
-        tab[n - 1][0] = 1;
+        maze[0][i] = 1;
+        maze[n - 1][0] = 1;
     }
 
-    tab[0][1] = 0;
-    tab[0][n - 1] = 0;
+    maze[0][1] = 0;
+    maze[0][n - 1] = 0;
 }
 
 void initMaze() {
