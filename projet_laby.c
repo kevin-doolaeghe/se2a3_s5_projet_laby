@@ -28,9 +28,6 @@
 #define CYAN        36
 #define WHITE       37
 
-//#define color(paramChar, paramBackground) printf("\033[1;%dm""\033[1;%dm", paramChar, paramBackground+10)
-//#define gotoxy(x,y) printf("\033[%d;%df", y, x)
-
 const unsigned int WINDOW_WIDTH = 120;
 const unsigned int WINDOW_HEIGHT = 40;
 const unsigned int MENUS_WIDTH = 30;
@@ -42,6 +39,8 @@ unsigned int m; // Width
 unsigned int n; // Height
 bool** maze;
 bool** solution;
+bool isMazeDisplayed = false;
+bool isSolutionDisplayed = false;
 
 /*
  * =====================================================================================================================
@@ -108,10 +107,7 @@ void clearTerminal() {
 }
 
 void resizeTerminal(unsigned int columns, unsigned int lines) {
-    char* cmd = strcat("resize -s ", lines);
-    cmd = strcat(cmd, " ");
-    cmd = strcat(cmd, columns);
-    system(cmd);
+	printf("resize -s %d %d", lines, columns);
 }
 
 void moveCursor(unsigned int x, unsigned int y) {
@@ -124,31 +120,14 @@ void setColor(unsigned int charColor, unsigned int backgroundColor) {
 
 int getch()
 {
-	system("/bin/stty raw");
-	int key = getchar(); 
-	system("/bin/stty raw");
+	system("stty raw -echo"); // Paramétrage pour la saisie
+	int key = getchar();
+	system("stty cooked echo");
 
 	return key;
 }
 
 // =====================================================================================================================
-
-void displayMaze() {
-    int upperLeftCornerX = (WINDOW_WIDTH - MENUS_WIDTH - m) / 2;
-    int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
-
-    for (unsigned int i = 0; i < m; i++) {
-        for (unsigned int j = 0; j < n; j++) {
-            moveCursor(upperLeftCornerX + i, upperLeftCornerY + j);
-            if (maze[i][j] == 1) printf("1");
-            else printf("0");
-        }
-    }
-}
-
-void displaySolution() {
-
-}
 
 static void displayBorders(unsigned int longueur, unsigned int x, unsigned int y)
 {
@@ -220,12 +199,9 @@ void displayTitle() {
 void displayMenuOption(unsigned int x, unsigned int y, char* text) {
     moveCursor(x, y);
     printf("%s", text);
-
-    unsigned int length = strlen(text);
-    displayBorders(length + 2, x - 1, y - 1);
 }
 
-void displayMenus() {
+void displayMenu() {
     unsigned int upperLeftCornerX = WINDOW_WIDTH - MENUS_WIDTH + MARGIN;
     unsigned int upperLeftCornerY = WINDOW_HEIGHT + MARGIN;
     unsigned int spaceBetweenOptions = 5;
@@ -237,14 +213,41 @@ void displayMenus() {
     displayMenuOption(upperLeftCornerX, upperLeftCornerY + spaceBetweenOptions * 4, "Quitter");
 }
 
-void displayObjectForSelectedMenuOption(unsigned int selectedOption) {
-    switch(selectedOption) {
-        case 1:
-            displayMaze();
-            break;
-        case 2:
-            displaySolution();
-            break;
+void displayMenuSelectionCursor(unsigned int selectedOption) {
+	unsigned int upperLeftCornerX = WINDOW_WIDTH - MENUS_WIDTH + MARGIN;
+    unsigned int upperLeftCornerY = WINDOW_HEIGHT + MARGIN;
+    unsigned int spaceBetweenOptions = 5;
+
+    moveCursor(upperLeftCornerX - 3, upperLeftCornerY + spaceBetweenOptions * selectedOption);
+    printf(">>");
+}
+
+// =====================================================================================================================
+
+void displayMaze() {
+    int upperLeftCornerX = (WINDOW_WIDTH - MENUS_WIDTH - m) / 2;
+    int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
+
+    for (unsigned int i = 0; i < m; i++) {
+        for (unsigned int j = 0; j < n; j++) {
+            moveCursor(upperLeftCornerX + i, upperLeftCornerY + j);
+            if (maze[i][j] == 1) printf("1");
+            else printf("0");
+        }
+    }
+}
+
+void displaySolution() {
+
+}
+
+void displayObjectForSelectedMenuOption() {
+    if (isMazeDisplayed == true) {
+    	displayMaze();
+    }
+
+    if (isSolutionDisplayed == true) {
+    	displaySolution();
     }
 }
 
@@ -272,11 +275,11 @@ void handleEvents(unsigned int selectedOption) {
     switch(selectedOption) {
         case 1:
             generateMaze();
-            displayMaze();
+            isMazeDisplayed = true;
             break;
         case 2:
             solveMaze();
-            displaySolution();
+            isSolutionDisplayed = true;
             break;
         case 3:
             saveMaze(FILE_PATH);
@@ -288,7 +291,7 @@ void handleEvents(unsigned int selectedOption) {
 }
 
 void loop() {
-    //Initialisation
+    // Initialisation
     char key;
     unsigned int selectedOption = 1;
     unsigned int optionNb = 5;
@@ -297,34 +300,28 @@ void loop() {
     do
     {
         setColor(BLACK, COLOR_BG);
+        // Nettoyage de l'écran
         clearTerminal();
 
-        //Affichage du titre
+        // Affichage du titre
         displayTitle();
 
-        //Affichage des propositions
-        displayMenus();
+        // Affichage des propositions
+        displayMenu();
 
-        do //Boucle de décalage du curseur selon le choix
+        // Affichage du curseur
+        displayMenuSelectionCursor(selectedOption, optionNb);
+
+        // Affichage des éléments sélectionnés
+        displayObjectForSelectedMenuOption(selectedOption);
+
+		//Curseur en haut à gauche de l'écran
+        moveCursor(1, 1);
+
+        do // Boucle de détection des évènements
         {
-	        setColor(BLACK, COLOR_BG);
-	        clearTerminal();
-
-            //Effacage du curseur
-            for(i = 6; i < optionNb * 2 + 8; i++)
-            {
-                moveCursor(7, i);
-                printf("  ");
-            }
-
-            //Affichage du curseur
-            moveCursor(7, selectedOption * 2 + 4);
-            setColor(12, 15);
-            printf(">>");
-            setColor(0, 15);
-
-            //Curseur en haut à gauche de l'écran
-            moveCursor(1, 1);
+			// 60 détections par seconde pour limiter l'utilisation du processeur
+            usleep(16667);
 
             //Détection de la touche pressée
             key = getch();
@@ -337,8 +334,6 @@ void loop() {
             	if(selectedOption == 1) selectedOption = optionNb + 1;
                 else selectedOption -= 1;
             }
-
-            usleep(16667);
         } while(key != KEY_ENTER); //Touche entrée
 
         //Lancement de la fonction adéquate
@@ -353,7 +348,6 @@ void loop() {
  */
 
 int main() {
-	/*
     initRand();
     setDimensions();
     createMaze(m, n);
@@ -361,10 +355,6 @@ int main() {
     loop();
 
     destroyMaze();
-	*/
-	for (unsigned char i = 0; i < 255; i++) {
-		printf("%c\n", i);
-	}
 
     return 0;
 }
