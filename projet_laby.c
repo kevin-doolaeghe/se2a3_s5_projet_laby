@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <time.h>
 #include <math.h>
 #include <string.h>
-#include <termios.h>
-#include <unistd.h>
 
 /*
  * =====================================================================================================================
@@ -13,12 +12,12 @@
  * =====================================================================================================================
  */
 
-#define KEY_ESCAPE  0x001b
-#define KEY_ENTER   0x000a
-#define KEY_UP      0x0105
-#define KEY_DOWN    0x0106
-#define KEY_LEFT    0x0107
-#define KEY_RIGHT   0x0108
+#define KEY_ESCAPE  32
+#define KEY_ENTER   13
+#define KEY_UP      65
+#define KEY_DOWN    66
+#define KEY_LEFT    68
+#define KEY_RIGHT   67
 
 #define BLACK       30
 #define RED         31
@@ -66,7 +65,7 @@ void createMaze(int m, int n) {
     }
 }
 
-void destroyMaze(bool** maze) {
+void destroyMaze() {
     free(maze);
 }
 
@@ -109,7 +108,10 @@ void clearTerminal() {
 }
 
 void resizeTerminal(unsigned int columns, unsigned int lines) {
-    system("resize -s " + lines + " " + columns);
+    char* cmd = strcat("resize -s ", lines);
+    cmd = strcat(cmd, " ");
+    cmd = strcat(cmd, columns);
+    system(cmd);
 }
 
 void moveCursor(unsigned int x, unsigned int y) {
@@ -118,6 +120,15 @@ void moveCursor(unsigned int x, unsigned int y) {
 
 void setColor(unsigned int charColor, unsigned int backgroundColor) {
     printf("\033[1;%dm""\033[1;%dm", charColor, backgroundColor + 10);
+}
+
+int getch()
+{
+	system("/bin/stty raw");
+	int key = getchar(); 
+	system("/bin/stty raw");
+
+	return key;
 }
 
 // =====================================================================================================================
@@ -201,7 +212,7 @@ void displayTitle() {
     unsigned int x = (WINDOW_WIDTH - MENUS_WIDTH - length) / 2;
     unsigned int y = MARGIN;
     moveCursor(x, y);
-    printf("%s", text);
+    printf("%s", title);
 
     displayBorders(length + 2, x - 1, y - 1);
 }
@@ -226,22 +237,13 @@ void displayMenus() {
     displayMenuOption(upperLeftCornerX, upperLeftCornerY + spaceBetweenOptions * 4, "Quitter");
 }
 
-void displaySelectedMenuOption(unsigned int selectedOption) {
-    switch(selectedOption)
-    {
+void displayObjectForSelectedMenuOption(unsigned int selectedOption) {
+    switch(selectedOption) {
         case 1:
-            generateMaze();
             displayMaze();
             break;
         case 2:
-            solveMaze();
             displaySolution();
-            break;
-        case 3:
-            saveMaze(FILE_PATH);
-            break;
-        case 4:
-            loadMaze(FILE_PATH);
             break;
     }
 }
@@ -249,13 +251,13 @@ void displaySelectedMenuOption(unsigned int selectedOption) {
 // =====================================================================================================================
 
 void saveMaze(char* filePath) {
-    char* cmd = FILE_PATH + " >> ";
+    char* cmd = strcat(FILE_PATH, " >> ");
     for (unsigned int i = 0; i < m; i++) {
         for (unsigned int j = 0; j < n; j++) {
-            if (maze[i][j] == 1) cmd += "1";
-            else cmd += "0";
+            if (maze[i][j] == 1) cmd = strcat(cmd, "1");
+            else cmd = strcat(cmd, "0");
         }
-        cmd += "\n";
+        cmd = strcat(cmd, "\n");
     }
     printf("%s", cmd);
 }
@@ -265,62 +267,6 @@ void loadMaze(char* filePath) {
 }
 
 // =====================================================================================================================
-
-void loop() {
-    //Initialisation
-    char key1, key2;
-    unsigned int selectedOption = 1;
-    unsigned int i;
-
-    do
-    {
-        setColor(BLACK, COLOR_BG);
-        clear();
-
-        //Affichage du titre
-        displayTitle();
-
-        //Affichage des propositions
-        displayMenus();
-
-        do //Boucle de décalage du curseur selon le choix
-        {
-            //Effacage du curseur
-            for(i = 6; i < nbProp * 2 + 8; i++)
-            {
-                moveCursor(7, i);
-                printf("  ");
-            }
-
-            //Affichage du curseur
-            moveCursor(7, selection * 2 + 4);
-            color(12, 15);
-            printf(">>");
-            color(0, 15);
-
-            //Curseur en haut à gauche de l'écran
-            moveCursor(1, 1);
-
-            //Détection de la touche pressée
-            key2 = 0; //Initialisation
-            key1 = getch();
-            if(key1 == -32) key2 = getch(); //Touches directionnelles = 2 touches pressées
-            if(key2 == 72) //Flèche du haut
-            {
-                if(selection == 1) selection = nbProp + 1;
-                else selection -= 1;
-            }
-            if(key2 == 80) //Flèche du bas
-            {
-                if(selectedOption == 5) selectedOption = 1;
-                else selectedOption += 1;
-            }
-        } while(key1 != KEY_ENTER); //Touche entrée
-
-        //Lancement de la fonction adéquate
-        handleEvents(selectedOption);
-    } while(selectedOption != 5); //Quitter
-}
 
 void handleEvents(unsigned int selectedOption) {
     switch(selectedOption) {
@@ -341,6 +287,65 @@ void handleEvents(unsigned int selectedOption) {
     }
 }
 
+void loop() {
+    //Initialisation
+    char key;
+    unsigned int selectedOption = 1;
+    unsigned int optionNb = 5;
+    unsigned int i;
+
+    do
+    {
+        setColor(BLACK, COLOR_BG);
+        clearTerminal();
+
+        //Affichage du titre
+        displayTitle();
+
+        //Affichage des propositions
+        displayMenus();
+
+        do //Boucle de décalage du curseur selon le choix
+        {
+	        setColor(BLACK, COLOR_BG);
+	        clearTerminal();
+
+            //Effacage du curseur
+            for(i = 6; i < optionNb * 2 + 8; i++)
+            {
+                moveCursor(7, i);
+                printf("  ");
+            }
+
+            //Affichage du curseur
+            moveCursor(7, selectedOption * 2 + 4);
+            setColor(12, 15);
+            printf(">>");
+            setColor(0, 15);
+
+            //Curseur en haut à gauche de l'écran
+            moveCursor(1, 1);
+
+            //Détection de la touche pressée
+            key = getch();
+            printf("%d", key);
+            if (key == KEY_UP) {
+				if(selectedOption == optionNb) selectedOption = 1;
+                else selectedOption += 1;
+            }
+            if (key == KEY_DOWN) {
+            	if(selectedOption == 1) selectedOption = optionNb + 1;
+                else selectedOption -= 1;
+            }
+
+            usleep(16667);
+        } while(key != KEY_ENTER); //Touche entrée
+
+        //Lancement de la fonction adéquate
+        handleEvents(selectedOption);
+    } while(selectedOption != optionNb); //Quitter
+}
+
 /*
  * =====================================================================================================================
  * Main
@@ -348,6 +353,7 @@ void handleEvents(unsigned int selectedOption) {
  */
 
 int main() {
+	/*
     initRand();
     setDimensions();
     createMaze(m, n);
@@ -355,6 +361,10 @@ int main() {
     loop();
 
     destroyMaze();
+	*/
+	for (unsigned char i = 0; i < 255; i++) {
+		printf("%c\n", i);
+	}
 
     return 0;
 }
