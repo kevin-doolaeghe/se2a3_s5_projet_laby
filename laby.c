@@ -122,7 +122,7 @@ int getch()
 {
 	system("stty raw -echo"); // Paramétrage pour la saisie
 	int key = getchar();
-	system("stty cooked echo");s
+	system("stty cooked echo");
 
 	return key;
 }
