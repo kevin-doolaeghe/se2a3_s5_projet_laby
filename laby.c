@@ -12,7 +12,7 @@
  * =====================================================================================================================
  */
 
-#define KEY_ESCAPE  32
+#define KEY_ESCAPE  27
 #define KEY_ENTER   13
 #define KEY_UP      65
 #define KEY_DOWN    66
@@ -106,8 +106,19 @@ void clearTerminal() {
     system("clear");
 }
 
-void resizeTerminal(unsigned int columns, unsigned int lines) {
-	printf("resize -s %d %d", lines, columns);
+void resizeTerminal(unsigned int lines, unsigned int columns) {
+    char* lines_str = (char *) malloc(40 * sizeof(char));
+    sprintf((char*) lines_str,"%d",lines);
+    char* columns_str = (char *) malloc(40 * sizeof(char));
+    sprintf((char*) columns_str,"%d",columns);
+
+    char* cmd = (char *) malloc(40 * sizeof(char));;
+    cmd = strcat(cmd, "resize -s ");
+    cmd = strcat(cmd, lines_str);
+    cmd = strcat(cmd, " ");
+    cmd = strcat(cmd, columns_str);
+
+	system(cmd);
 }
 
 void moveCursor(unsigned int x, unsigned int y) {
@@ -120,9 +131,9 @@ void setColor(unsigned int charColor, unsigned int backgroundColor) {
 
 int getch()
 {
-	system("stty raw -echo"); // Paramétrage pour la saisie
+	system("stty ignbrk -echo"); // Paramétrage pour la saisie
 	int key = getchar();
-	system("stty cooked echo");
+	system("stty -ignbrk echo");
 
 	return key;
 }
@@ -139,61 +150,36 @@ static void displayBorders(unsigned int longueur, unsigned int x, unsigned int y
     posX = x - 1;
     posY = y - 1;
     moveCursor(posX, posY);
-    printf("%c", 201);
-    for(i = 0; i < longueur - 2; i++) printf("%c", 205);
-    printf("%c", 187);
+    printf("+"); // printf("%c", 201);
+    for(i = 0; i < longueur - 2; i++) printf("-"); // printf("%c", 205);
+    printf("+"); // printf("%c", 187);
 
     posY++;
     moveCursor(posX, posY);
-    printf("%c", 186);
+    printf("|"); // printf("%c", 186);
 
     posX += longueur - 1;
     moveCursor(posX, posY);
-    printf("%c", 186);
+    printf("|"); // printf("%c", 186);
 
     posX = x - 1;
     posY++;
     moveCursor(posX, posY);
-    printf("%c", 200);
-    for(i = 0; i < longueur - 2; i++) printf("%c", 205);
-    printf("%c", 188);
-}
-
-static void removeBorders(unsigned int longueur, unsigned int x, unsigned int y)
-{
-    unsigned int posX;
-    unsigned int posY;
-    unsigned int i;
-
-    posX = x - 1;
-    posY = y - 1;
-    moveCursor(posX, posY);
-    for(i = 0; i < longueur; i++) printf(" ");
-
-    posY++;
-    moveCursor(posX, posY);
-    printf(" ");
-
-    posX += longueur - 1;
-    moveCursor(posX, posY);
-    printf(" ");
-
-    posX = x - 1;
-    posY++;
-    moveCursor(posX, posY);
-    for(i = 0; i < longueur; i++) printf(" ");
+    printf("+"); // printf("%c", 200);
+    for(i = 0; i < longueur - 2; i++) printf("-"); // printf("%c", 205);
+    printf("+"); // printf("%c", 188);
 }
 
 void displayTitle() {
-    char* title = "Projet labyrinthe";
+    char* title = " Projet labyrinthe ";
     unsigned int length = strlen(title);
 
-    unsigned int x = (WINDOW_WIDTH - MENUS_WIDTH - length) / 2;
+    unsigned int x = (WINDOW_WIDTH - length) / 2;
     unsigned int y = MARGIN;
     moveCursor(x, y);
     printf("%s", title);
 
-    displayBorders(length + 2, x - 1, y - 1);
+    displayBorders(length + 2, x, y);
 }
 
 void displayMenuOption(unsigned int x, unsigned int y, char* text) {
@@ -218,6 +204,11 @@ void displayMenuSelectionCursor(unsigned int selectedOption) {
     unsigned int upperLeftCornerY = WINDOW_HEIGHT + MARGIN;
     unsigned int spaceBetweenOptions = 5;
 
+    for (unsigned int i = 0; i < 5; i++) {
+        moveCursor(upperLeftCornerX - 3, upperLeftCornerY + spaceBetweenOptions * selectedOption);
+        printf("  ");
+    }
+
     moveCursor(upperLeftCornerX - 3, upperLeftCornerY + spaceBetweenOptions * selectedOption);
     printf(">>");
 }
@@ -231,8 +222,8 @@ void displayMaze() {
     for (unsigned int i = 0; i < m; i++) {
         for (unsigned int j = 0; j < n; j++) {
             moveCursor(upperLeftCornerX + i, upperLeftCornerY + j);
-            if (maze[i][j] == 1) printf("1");
-            else printf("0");
+            if (maze[i][j] == 1) printf("#");
+            else printf(" ");
         }
     }
 }
@@ -292,7 +283,7 @@ void handleEvents(unsigned int selectedOption) {
 
 void loop() {
     // Initialisation
-    char key;
+    char key = 0;
     unsigned int selectedOption = 1;
     unsigned int optionNb = 5;
 
@@ -308,36 +299,50 @@ void loop() {
         // Affichage des propositions
         displayMenu();
 
-        // Affichage du curseur
-        displayMenuSelectionCursor(selectedOption);
-
         // Affichage des éléments sélectionnés
         displayObjectForSelectedMenuOption();
 
-		//Curseur en haut à gauche de l'écran
-        moveCursor(1, 1);
-
         do // Boucle de détection des évènements
         {
+            // Affichage du curseur
+            displayMenuSelectionCursor(selectedOption);
+
+            //Curseur en haut à gauche de l'écran
+            moveCursor(1, 1);
+
 			// 60 détections par seconde pour limiter l'utilisation du processeur
             usleep(16667);
 
             //Détection de la touche pressée
             key = getch();
-            printf("%d", key);
+            if (key == 27) key = getch();
+            if (key == 91) key = getch();
+
             if (key == KEY_UP) {
-				if(selectedOption == optionNb) selectedOption = 1;
-                else selectedOption += 1;
+				if(selectedOption == 1) selectedOption = optionNb;
+                else selectedOption -= 1;
             }
             if (key == KEY_DOWN) {
-            	if(selectedOption == 1) selectedOption = optionNb + 1;
-                else selectedOption -= 1;
+            	if(selectedOption == optionNb) selectedOption = 1;
+                else selectedOption += 1;
             }
         } while(key != KEY_ENTER); //Touche entrée
 
         //Lancement de la fonction adéquate
         handleEvents(selectedOption);
     } while(selectedOption != optionNb); //Quitter
+}
+
+void run() {
+    resizeTerminal(WINDOW_HEIGHT, WINDOW_WIDTH);
+
+    initRand();
+    setDimensions();
+    createMaze(m, n);
+
+    loop();
+
+    destroyMaze();
 }
 
 /*
@@ -347,13 +352,7 @@ void loop() {
  */
 
 int main() {
-    initRand();
-    setDimensions();
-    createMaze(m, n);
-
-    loop();
-
-    destroyMaze();
+    run();
 
     return 0;
 }
