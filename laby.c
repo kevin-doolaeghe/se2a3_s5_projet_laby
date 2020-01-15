@@ -34,14 +34,15 @@ const unsigned int MENU_WIDTH = 30;
 const unsigned int MENU_HEIGHT = 13;
 const unsigned int MARGIN = 3;
 const unsigned int COLOR_BG = WHITE;
-const char* FILE_PATH = "~/.maze.save";
+const char* FILE_PATH = "~/maze.save";
 
 unsigned int m; // Width
 unsigned int n; // Height
-bool **maze;
-bool **solution;
-bool isMazeDisplayed = false;
-bool isSolutionDisplayed = false;
+bool **maze = NULL;
+bool **solution = NULL;
+
+bool isMazeCreated = false;
+bool isSolutionCreated = false;
 
 /*
  * =====================================================================================================================
@@ -54,8 +55,11 @@ void initRand() {
 }
 
 void setDimensions() {
-    m = rand() % 30 + 51; // rand() % 80 + 1;
+    m = rand() % 30 + 50; // rand() % 80 + 1;
     n = rand() % 12 + 14; // rand() % 25 + 1;
+
+    if (m % 2 == 1) m++;
+    if (n % 2 == 1) n++;
 }
 
 void createMaze(unsigned int m, unsigned int n) {
@@ -63,10 +67,14 @@ void createMaze(unsigned int m, unsigned int n) {
     for (unsigned int i = 0; i < m; i++) {
         maze[i] = malloc(n * sizeof(bool)); // Lines >> Y
     }
+
+    isMazeCreated = true;
 }
 
 void destroyMaze() {
     for (unsigned int i = 0; i < m; i++) free(maze[i]);
+
+    isMazeCreated = false;
 }
 
 void createSolution(unsigned int m, unsigned int n) {
@@ -74,15 +82,25 @@ void createSolution(unsigned int m, unsigned int n) {
     for (unsigned int i = 0; i < m; i++) {
         solution[i] = malloc(n * sizeof(bool)); // Lines >> Y
     }
+
+    isSolutionCreated = true;
 }
 
 void destroySolution() {
     for (unsigned int i = 0; i < m; i++) free(solution[i]);
+
+    isSolutionCreated = false;
 }
 
 // =====================================================================================================================
 
 void generateMaze() {
+    if (isMazeCreated == true) destroyMaze();
+    if (isSolutionCreated == true) destroySolution();
+
+    setDimensions();
+    createMaze(m, n);
+
     for (unsigned int i = 0; i < m; i++) {
         for (unsigned int j = 0; j < n; j++) {
             maze[i][j] = rand() % 2;
@@ -105,7 +123,11 @@ void generateMaze() {
 }
 
 void solveMaze() {
+    if (isMazeCreated == true) {
+        if (isSolutionCreated == true) destroySolution();
 
+        createSolution(m, n);
+    }
 }
 
 /*
@@ -226,57 +248,106 @@ void displayMenuSelectionCursor(unsigned int selectedOption) {
 // =====================================================================================================================
 
 void displayMaze() {
-    int upperLeftCornerX = (WINDOW_WIDTH - MENU_WIDTH - m) / 2;
-    int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
+    if (isMazeCreated == true) {
+        int upperLeftCornerX = (WINDOW_WIDTH - MENU_WIDTH - m) / 2;
+        int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
 
-    for (unsigned int i = 0; i < m; i++) {
-        for (unsigned int j = 0; j < n; j++) {
-            moveCursor(upperLeftCornerX + i, upperLeftCornerY + j);
-            if (maze[i][j] == 1) printf("#");
-            else printf(" ");
+        for (unsigned int i = 0; i < m; i++) {
+            for (unsigned int j = 0; j < n; j++) {
+                moveCursor(upperLeftCornerX + i, upperLeftCornerY + j);
+                if (maze[i][j] == 1) printf("#");
+                else printf(" ");
+            }
         }
     }
 }
 
 void displaySolution() {
-    int upperLeftCornerX = (WINDOW_WIDTH - MENU_WIDTH - m) / 2;
-    int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
+    if (isSolutionCreated == true) {
+        int upperLeftCornerX = (WINDOW_WIDTH - MENU_WIDTH - m) / 2;
+        int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
 
-    for (unsigned int i = 0; i < m; i++) {
-        for (unsigned int j = 0; j < n; j++) {
-            moveCursor(upperLeftCornerX + i, upperLeftCornerY + j);
-            if (solution[i][j] == 1) printf("*");
+        for (unsigned int i = 0; i < m; i++) {
+            for (unsigned int j = 0; j < n; j++) {
+                moveCursor(upperLeftCornerX + i, upperLeftCornerY + j);
+                if (solution[i][j] == 1) printf("*");
+            }
         }
-    }
-}
-
-void displayObjectForSelectedMenuOption() {
-    if (isMazeDisplayed == true) {
-    	displayMaze();
-    }
-
-    if (isSolutionDisplayed == true) {
-    	displaySolution();
     }
 }
 
 // =====================================================================================================================
 
 void saveMaze(const char *filePath) {
-    char* cmd = (char *) malloc(2500 * sizeof(char));
-    cmd = strcat((char *) FILE_PATH, " >> ");
-    for (unsigned int i = 0; i < m; i++) {
-        for (unsigned int j = 0; j < n; j++) {
-            if (maze[i][j] == 1) cmd = strcat(cmd, "1");
-            else cmd = strcat(cmd, "0");
+    if (isMazeCreated == true) {
+        FILE* file = fopen(filePath, "w+");
+        
+        if (file != NULL) {
+            char c;
+
+            /*
+            fputc(m, file);
+            fputc("\n", file);
+            fputc(n, file);
+            fputc("\n", file);
+            */
+
+            for (unsigned int i = 0; i < n; i++) {
+                for (unsigned int j = 0; j < m; j++) {
+                    if (maze[j][i] == 1) c = "1";
+                    else c = "0";
+
+                    fputc(c, file);
+                }
+                fputc("\n", file);
+            }
+
+        } else {
+            // File not found
         }
-        cmd = strcat(cmd, "\n");
+
+        fclose(file);
     }
-    system(cmd);
 }
 
 void loadMaze(const char *filePath) {
+    if (isMazeCreated == true) destroyMaze();
+    if (isSolutionCreated == true) destroySolution();
 
+    FILE* file = fopen(filePath, "r");
+
+    if (file != NULL) {
+        char c;
+        unsigned int x = 0;
+        unsigned int y = 0;
+
+        while ((c = fgetc(file)) != "\n") {
+            m = (unsigned int) c;
+        }
+
+        while ((c = fgetc(file)) != "\n") {
+            n = (unsigned int) c;
+        }
+
+        destroyMaze();
+        createMaze(m, n);
+
+        while ((c = fgetc(file)) != EOF) {
+            if (c == "\n") {
+                y++;
+                x = 0;
+            }
+
+            if (c == "1") maze[x][y] = 1;
+            else maze[x][y] = 0;
+
+            x++;
+        }
+    } else {
+        printf("Fichier introuvable");
+    }
+
+    fclose(file);
 }
 
 // =====================================================================================================================
@@ -285,11 +356,9 @@ void handleEvents(unsigned int selectedOption) {
     switch(selectedOption) {
         case 1:
             generateMaze();
-            isMazeDisplayed = true;
             break;
         case 2:
             solveMaze();
-            isSolutionDisplayed = true;
             break;
         case 3:
             saveMaze(FILE_PATH);
@@ -319,7 +388,8 @@ void loop() {
         displayMenu();
 
         // Affichage des éléments sélectionnés
-        displayObjectForSelectedMenuOption();
+        displayMaze();
+        displaySolution();
 
         do // Boucle de détection des évènements
         {
@@ -355,11 +425,7 @@ void loop() {
 
 void run() {
     resizeTerminal(WINDOW_HEIGHT, WINDOW_WIDTH);
-
     initRand();
-    setDimensions();
-    createMaze(m, n);
-    createSolution(m, n);
 
     loop();
 
