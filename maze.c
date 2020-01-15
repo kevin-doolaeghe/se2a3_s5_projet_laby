@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 const int m=25;
-const int n=69;
+const int n=85;
 
 void createpath(bool maze[m][n],int x, int y) {
 
