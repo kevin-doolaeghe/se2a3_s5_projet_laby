@@ -38,8 +38,8 @@ const char* FILE_PATH = "~/.maze.save";
 
 unsigned int m; // Width
 unsigned int n; // Height
-bool** maze;
-bool** solution;
+bool **maze;
+bool **solution;
 bool isMazeDisplayed = false;
 bool isSolutionDisplayed = false;
 
@@ -59,7 +59,7 @@ void setDimensions() {
 }
 
 void createMaze(unsigned int m, unsigned int n) {
-    maze = malloc(m * sizeof(* maze)); // Columns >> X
+    maze = malloc(m * sizeof(*maze)); // Columns >> X
     for (unsigned int i = 0; i < m; i++) {
         maze[i] = malloc(n * sizeof(bool)); // Lines >> Y
     }
@@ -67,6 +67,17 @@ void createMaze(unsigned int m, unsigned int n) {
 
 void destroyMaze() {
     for (unsigned int i = 0; i < m; i++) free(maze[i]);
+}
+
+void createSolution(unsigned int m, unsigned int n) {
+    solution = malloc(m * sizeof(*solution)); // Columns >> X
+    for (unsigned int i = 0; i < m; i++) {
+        solution[i] = malloc(n * sizeof(bool)); // Lines >> Y
+    }
+}
+
+void destroySolution() {
+    for (unsigned int i = 0; i < m; i++) free(solution[i]);
 }
 
 // =====================================================================================================================
@@ -172,7 +183,7 @@ static void displayBorders(unsigned int longueur, unsigned int x, unsigned int y
 }
 
 void displayTitle() {
-    char* title = " Projet labyrinthe ";
+    char *title = " Projet labyrinthe ";
     unsigned int length = strlen(title);
 
     unsigned int x = (WINDOW_WIDTH - MENU_WIDTH - length) / 2;
@@ -228,7 +239,15 @@ void displayMaze() {
 }
 
 void displaySolution() {
+    int upperLeftCornerX = (WINDOW_WIDTH - MENU_WIDTH - m) / 2;
+    int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
 
+    for (unsigned int i = 0; i < m; i++) {
+        for (unsigned int j = 0; j < n; j++) {
+            moveCursor(upperLeftCornerX + i, upperLeftCornerY + j);
+            if (solution[i][j] == 1) printf("*");
+        }
+    }
 }
 
 void displayObjectForSelectedMenuOption() {
@@ -243,8 +262,9 @@ void displayObjectForSelectedMenuOption() {
 
 // =====================================================================================================================
 
-void saveMaze(const char* filePath) {
-    char* cmd = strcat((char*)FILE_PATH, " >> ");
+void saveMaze(const char *filePath) {
+    char* cmd = (char *) malloc(2500 * sizeof(char));
+    cmd = strcat((char *) FILE_PATH, " >> ");
     for (unsigned int i = 0; i < m; i++) {
         for (unsigned int j = 0; j < n; j++) {
             if (maze[i][j] == 1) cmd = strcat(cmd, "1");
@@ -252,10 +272,10 @@ void saveMaze(const char* filePath) {
         }
         cmd = strcat(cmd, "\n");
     }
-    printf("%s", cmd);
+    system(cmd);
 }
 
-void loadMaze(const char* filePath) {
+void loadMaze(const char *filePath) {
 
 }
 
@@ -339,10 +359,12 @@ void run() {
     initRand();
     setDimensions();
     createMaze(m, n);
+    createSolution(m, n);
 
     loop();
 
     destroyMaze();
+    destroySolution();
 }
 
 /*
