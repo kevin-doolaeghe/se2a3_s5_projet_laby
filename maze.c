@@ -8,7 +8,7 @@ const int n=69;
 int entree;
 int sortie;
 
-void createpath(int maze[m][n],int x, int y) {
+void createpath(bool maze[m][n],int x, int y) {
 
    int x1, y1;
    int x2, y2;
@@ -45,7 +45,7 @@ void createpath(int maze[m][n],int x, int y) {
    }
 
 }
-void generateMaze(int maze[m][n])
+void generateMaze(bool maze[m][n])
 {
     int x, y;
   //init maze
@@ -73,13 +73,24 @@ void generateMaze(int maze[m][n])
     maze[(m - 1)][ (n - 2)] = 0;
 
  }
-void solvemaze(int maze[m][n])
+void solvemaze(bool maze[m][n],bool solution[m][n])
 {
-    int dir, count;
+   int dir, count;
    int x, y;
    int dx, dy;
    int forward;
+   printf("yes");
+   //init maze
+   for (int i = 0; i < m; i++) 
+   {
+       for (int j = 0; j < n; j++)
+        { 
+           solution[i][j] =0;  
+        }
+   }
+  
 
+   
    /* Remove the entry and exit. */
    maze[0 ][ 1] = 1;
    maze[(m - 1)][ (n - 2)] = 1;
@@ -98,8 +109,8 @@ void solvemaze(int maze[m][n])
       default: dy = -1; break;
       }
       if(   (forward  && maze[(y + dy)] [ (x + dx)] == 0)
-         || (!forward && maze[(y + dy)][ (x + dx)] == 2)) {
-         maze[y ] [ x] = forward ? 2 : 3;
+         || (!forward && solution[(y + dy)][ (x + dx)] == 1)) {
+         solution[y ] [ x] = forward ? 1 : 0;
          x += dx;
          y += dy;
          forward = 1;
@@ -116,22 +127,23 @@ void solvemaze(int maze[m][n])
    }
 
    /* Replace the entry and exit. */
-   maze[0 ] [1] = 2;
-   maze[(m - 1) ]  [(n - 2)] = 2;
+   maze[0 ][ 1] = 0;
+   maze[(m - 1)][ (n - 2)] = 0;
+   solution[0 ] [1] = 2;
+   solution[(m - 1) ]  [(n - 2)] = 2;
    }
 // 
    /* Replace the entry and exit. */
     
 
 // Display maze
-void showmaze(int maze[m][n])
+void showmaze(bool maze[m][n])
 {
     int x, y;
    for(y = 0; y < m; y++) {
       for(x = 0; x < n; x++) {
          switch(maze[y ] [ x]) {
          case 1:  printf("[]");  break;
-         case 2:  printf("<>");  break;
          default: printf("  ");  break;
          }
       }
@@ -141,10 +153,11 @@ void showmaze(int maze[m][n])
 
 int main() {
 
-    int  maze[m][n];
-   generateMaze(maze);  
-   solvemaze(maze);
-   showmaze(maze);
+    bool  maze[m][n];
+    bool solution[m][n];
+    generateMaze(maze);  
+    solvemaze(maze,solution);
+    showmaze(maze);
 
     return 0;
 }
