@@ -4,9 +4,11 @@
 #include <stdbool.h>
 
 const int m=25;
-const int n=85;
+const int n=69;
+int entree;
+int sortie;
 
-void createpath(bool maze[m][n],int x, int y) {
+void createpath(int maze[m][n],int x, int y) {
 
    int x1, y1;
    int x2, y2;
@@ -27,7 +29,7 @@ void createpath(bool maze[m][n],int x, int y) {
       y1 = y + dy;
       x2 = x1 + dx;
       y2 = y1 + dy;
-      if( x2 > 0 && x2 < n-1 && y2 > 0 && y2 < m-1 && maze[y1 ][x1] ==1 && maze[y2][x2] == 1) //x1 > 0 && x1 < n && y1 > 0 && y1 < m &&
+      if( x2 > 0 && x2 < n-1 && y2 > 0 && y2 < m-1 && maze[y1 ][x1] ==1 && maze[y2][x2] == 1)
       {  
          maze[y1 ][x1] =0;
          maze[y2][x2]  = 0;
@@ -43,33 +45,86 @@ void createpath(bool maze[m][n],int x, int y) {
    }
 
 }
-void generateMaze(bool maze[m][n])
+void generateMaze(int maze[m][n])
 {
     int x, y;
   //init maze
-   for (int i = 0; i < m; i++) {
-       for (int j = 0; j < n; j++) { 
+   for (int i = 0; i < m; i++) 
+   {
+       for (int j = 0; j < n; j++)
+        { 
            maze[i][j] =1;  
-
         }
-     }
-    // showmaze(maze);
-    //   printf("\n");
-   // maze[1][1]=0;
-   /* Seed the random number generator. */
+   }
+  
+   // random number generator. 
    srand(time(0));
 
-   /* Carve the maze. */
-   for(y = 1; y < m; y += 2) {
-      for(x = 1; x < n; x += 2) {
-         createpath(maze,x, y);
-         
+   //Create path and ensure that we pass in all coins 
+   for(y = 1; y < m; y += 2) 
+   {
+      for(x = 1; x < n; x += 2)
+      {
+         createpath(maze,x, y); 
+      }
+   }
+   // entrer and exit of the laby
+     maze[0 ][ 1] = 0;
+    maze[(m - 1)][ (n - 2)] = 0;
+
+ }
+void solvemaze(int maze[m][n])
+{
+    int dir, count;
+   int x, y;
+   int dx, dy;
+   int forward;
+
+   /* Remove the entry and exit. */
+   maze[0 ][ 1] = 1;
+   maze[(m - 1)][ (n - 2)] = 1;
+
+   forward = 1;
+   dir = 0;
+   count = 0;
+   x = 1;
+   y = 1;
+   while(x != n - 2 || y != m - 2) {
+      dx = 0; dy = 0;
+      switch(dir) {
+      case 0:  dx = 1;  break;
+      case 1:  dy = 1;  break;
+      case 2:  dx = -1; break;
+      default: dy = -1; break;
+      }
+      if(   (forward  && maze[(y + dy)] [ (x + dx)] == 0)
+         || (!forward && maze[(y + dy)][ (x + dx)] == 2)) {
+         maze[y ] [ x] = forward ? 2 : 3;
+         x += dx;
+         y += dy;
+         forward = 1;
+         count = 0;
+         dir = 0;
+      } else {
+         dir = (dir + 1) % 4;
+         count += 1;
+         if(count > 3) {
+            forward = 0;
+            count = 0;
+         }
       }
    }
 
-}
+   /* Replace the entry and exit. */
+   maze[0 ] [1] = 2;
+   maze[(m - 1) ]  [(n - 2)] = 2;
+   }
+// 
+   /* Replace the entry and exit. */
+    
 
-void showmaze(bool maze[m][n])
+// Display maze
+void showmaze(int maze[m][n])
 {
     int x, y;
    for(y = 0; y < m; y++) {
@@ -83,12 +138,13 @@ void showmaze(bool maze[m][n])
       printf("\n");
    }
 }
+
 int main() {
 
-    
-    bool  maze[m][n];
-    generateMaze(maze);
-    showmaze(maze);
+    int  maze[m][n];
+   generateMaze(maze);  
+   solvemaze(maze);
+   showmaze(maze);
 
     return 0;
 }
