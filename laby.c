@@ -423,8 +423,8 @@ void loop() {
 
             // Détection de la touche pressée
             key = getch();
-            if (key == 27) key = getch();
-            if (key == 91) key = getch();
+            // if (key == 27) key = getch();
+            // if (key == 91) key = getch();
 
             if (key == KEY_UP) {
 				if (selectedOption == 1) selectedOption = optionNb;
@@ -449,6 +449,8 @@ void run() {
 
     if (isMazeCreated == true) destroyMaze(m, n);
     if (isSolutionCreated == true) destroySolution(m, n);
+    setColor(WHITE, BLACK);
+    clearTerminal();
 }
 
 /*
