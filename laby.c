@@ -31,13 +31,13 @@
 const unsigned int COLOR_FONT_DEFAULT = BLACK;
 const unsigned int COLOR_BG = WHITE;
 
-const unsigned int WINDOW_WIDTH = 180;
+const unsigned int WINDOW_WIDTH = 150;
 const unsigned int WINDOW_HEIGHT = 40;
-const unsigned int MENU_WIDTH = 20;
+const unsigned int MENU_WIDTH = 30;
 const unsigned int MENU_HEIGHT = 13;
 const unsigned int MARGIN = 3;
 
-const char* FILE_PATH = "~/maze.save";
+const char* FILE_PATH = "maze.save";
 
 unsigned int m; // Width
 unsigned int n; // Height
@@ -58,7 +58,7 @@ void initRand() {
 }
 
 void setDimensions() {
-    m = rand() % 30 + 50; // rand() % 80 + 1;
+    m = rand() % 26 + 30; // rand() % 30 + 50 // rand() % 80 + 1;
     n = rand() % 12 + 14; // rand() % 25 + 1;
 
     if (m % 2 == 0) m++;
@@ -97,26 +97,89 @@ void destroySolution(unsigned int m, unsigned int n) {
 
 // =====================================================================================================================
 
+bool isCaseFree(unsigned int x, unsigned int y) {
+    if (maze[x - 1][y] == 1 && maze[x][y - 1] == 1 && maze[x + 1][y] == 1 && maze[x][y + 1] == 1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void fillMaze() {
+    // printf("m:%u;n:%u", m, n);
     for (unsigned int i = 0; i < m; i++) {
         for (unsigned int j = 0; j < n; j++) {
-            maze[i][j] = rand() % 2;
+            if (i % 2 == 1 && j % 2 == 1) {
+                if (isCaseFree(i, j) == true) {
+                    unsigned int x = i;
+                    unsigned int y = j;
+
+                    bool isRunning = true;
+
+                    while (isRunning) {
+                        unsigned int direction = rand() % 4;
+
+                        /*
+                        printf("x:%u;y:%u\n", x, y);
+                        printf("%u\n", direction);
+                        getch();
+                        */
+
+                        switch (direction) {
+                        case 0: // Haut
+                            if (y != 1) {
+                                maze[x][y - 1] = 0;
+                                if (isCaseFree(x, y - 2) == true) {
+                                    y -= 2;
+                                } else {
+                                    isRunning = false;
+                                }
+                            } else {
+                                isRunning = false;
+                            }
+                            break;
+                        case 1: // Bas
+                            if (y != n - 2) {
+                                maze[x][y + 1] = 0;
+                                if (isCaseFree(x, y + 2) == true) {
+                                    y += 2;
+                                } else {
+                                    isRunning = false;
+                                }
+                            } else {
+                                isRunning = false;
+                            }
+                            break;
+                        case 2: // Gauche
+                            if (x != 1) {
+                                maze[x - 1][y] = 0;
+                                if (isCaseFree(x - 2, y) == true) {
+                                    x -= 2;
+                                } else {
+                                    isRunning = false;
+                                }
+                            } else {
+                                isRunning = false;
+                            }
+                            break;
+                        case 3: // Droite
+                            if (x != m - 2) {
+                                maze[x + 1][y] = 0;
+                                if (isCaseFree(x + 2, y) == true) {
+                                    x += 2;
+                                } else {
+                                    isRunning = false;
+                                }
+                            } else {
+                                isRunning = false;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
-
-    // Borders
-    for (unsigned int i = 0; i < m; i++) {
-        maze[i][0] = 1;
-        maze[i][n - 1] = 1;
-    }
-
-    for (unsigned int i = 0; i < n; i++) {
-        maze[0][i] = 1;
-        maze[m - 1][i] = 1;
-    }
-
-    maze[0][1] = 0;
-    maze[m - 1][n - 2] = 0;
 }
 
 void generateMaze() {
@@ -126,14 +189,36 @@ void generateMaze() {
     setDimensions();
     createMaze(m, n);
 
+    for (unsigned int i = 0; i < m; i++) {
+        for (unsigned int j = 0; j < n; j++) {
+            if (i % 2 == 1 && j % 2 == 1) maze[i][j] = 0;
+            else maze[i][j] = 1;
+        }
+    }
+
     fillMaze();
+
+    maze[0][1] = 0;
+    maze[m - 1][n - 2] = 0;
+}
+
+void fillSolution() {
+    
 }
 
 void solveMaze() {
-    if (isMazeCreated == true) {
-        if (isSolutionCreated == true) destroySolution(m, n);
+    if (isSolutionCreated == true) destroySolution(m, n);
 
+    if (isMazeCreated == true) {
         createSolution(m, n);
+
+        for (unsigned int i = 0; i < m; i++) {
+            for (unsigned int j = 0; j < n; j++) {
+                solution[i][j] = 0;
+            }
+        }
+
+        fillSolution();
     }
 }
 
@@ -270,7 +355,7 @@ void displayMaze() {
         for (unsigned int i = 0; i < m; i++) {
             for (unsigned int j = 0; j < n; j++) {
                 moveCursor(upperLeftCornerX + 2 * i, upperLeftCornerY + j);
-                if (maze[i][j] == 1) printf("[]");
+                if (maze[i][j] == 1) printf("▓▓"); // []
                 else printf("  ");
             }
         }
@@ -287,7 +372,7 @@ void displaySolution() {
         for (unsigned int i = 0; i < m; i++) {
             for (unsigned int j = 0; j < n; j++) {
                 moveCursor(upperLeftCornerX + 2 * i, upperLeftCornerY + j);
-                if (solution[i][j] == 1) printf("<>");
+                if (solution[i][j] == 1) printf("██"); // <>
             }
         }
         setColor(COLOR_FONT_DEFAULT, COLOR_BG);
@@ -303,12 +388,10 @@ void saveMaze(const char *filePath) {
         if (file != NULL) {
             char c;
 
-            /*
             fputc(m, file);
-            fputc("\n", file);
+            fputc('\n', file);
             fputc(n, file);
-            fputc("\n", file);
-            */
+            fputc('\n', file);
 
             for (unsigned int i = 0; i < n; i++) {
                 for (unsigned int j = 0; j < m; j++) {
@@ -317,27 +400,24 @@ void saveMaze(const char *filePath) {
 
                     fputc(c, file);
                 }
-                fputc('n', file);
+                fputc('\n', file);
             }
 
+            fclose(file);
         } else {
             // File not found
         }
-
-        fclose(file);
     }
 }
 
 void loadMaze(const char *filePath) {
-    if (isMazeCreated == true) destroyMaze(m, n);
-    if (isSolutionCreated == true) destroySolution(m, n);
-
     FILE* file = fopen(filePath, "r");
 
     if (file != NULL) {
+        if (isMazeCreated == true) destroyMaze(m, n);
+        if (isSolutionCreated == true) destroySolution(m, n);
+
         char c;
-        unsigned int x = 0;
-        unsigned int y = 0;
 
         while ((c = fgetc(file)) != '\n') {
             m = (unsigned int) c;
@@ -347,25 +427,20 @@ void loadMaze(const char *filePath) {
             n = (unsigned int) c;
         }
 
-        destroyMaze(m, n);
         createMaze(m, n);
 
-        while ((c = fgetc(file)) != EOF) {
-            if (c == '\n') {
-                y++;
-                x = 0;
+        for (unsigned int i = 0; i < n; i++) {
+            for (unsigned int j = 0; j < m + 1; j++) {
+                c = fgetc(file);
+                if (c == '1') maze[j][i] = 1;
+                if (c == '0') maze[j][i] = 0;
             }
-
-            if (c == '1') maze[x][y] = 1;
-            else maze[x][y] = 0;
-
-            x++;
         }
+
+        fclose(file);
     } else {
         // File not found
     }
-
-    fclose(file);
 }
 
 // =====================================================================================================================
