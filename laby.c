@@ -37,12 +37,12 @@ const unsigned int MENU_WIDTH = 30;
 const unsigned int MENU_HEIGHT = 13;
 const unsigned int MARGIN = 3;
 
-const char* FILE_PATH = "maze.save";
+const char *FILE_PATH = "maze.save";
 
 unsigned int m; // Width
 unsigned int n; // Height
-bool **maze = NULL;
-bool **solution = NULL;
+bool **maze;
+bool **solution;
 
 bool isMazeCreated = false;
 bool isSolutionCreated = false;
@@ -58,17 +58,17 @@ void initRand() {
 }
 
 void setDimensions() {
-    m = rand() % 26 + 30; // rand() % 30 + 50 // rand() % 80 + 1;
-    n = rand() % 12 + 14; // rand() % 25 + 1;
+    m = rand() % 26 + 30; // rand() % 19 + 60
+    n = rand() % 12 + 14; // rand() % 10 + 15
 
     if (m % 2 == 0) m++;
     if (n % 2 == 0) n++;
 }
 
 void createMaze(unsigned int m, unsigned int n) {
-    maze = malloc(m * sizeof(*maze)); // Columns >> X
+    maze = (bool **) malloc(m * sizeof(bool *)); // Columns
     for (unsigned int i = 0; i < m; i++) {
-        maze[i] = malloc(n * sizeof(bool)); // Lines >> Y
+        maze[i] = (bool *) malloc(n * sizeof(bool)); // Lines
     }
 
     isMazeCreated = true;
@@ -76,14 +76,15 @@ void createMaze(unsigned int m, unsigned int n) {
 
 void destroyMaze(unsigned int m, unsigned int n) {
     for (unsigned int i = 0; i < m; i++) free(maze[i]);
+    free(maze);
 
     isMazeCreated = false;
 }
 
 void createSolution(unsigned int m, unsigned int n) {
-    solution = malloc(m * sizeof(*solution)); // Columns >> X
+    solution = (bool **) malloc(m * sizeof(bool *));
     for (unsigned int i = 0; i < m; i++) {
-        solution[i] = malloc(n * sizeof(bool)); // Lines >> Y
+        solution[i] = (bool *) malloc(n * sizeof(bool));
     }
 
     isSolutionCreated = true;
@@ -91,13 +92,14 @@ void createSolution(unsigned int m, unsigned int n) {
 
 void destroySolution(unsigned int m, unsigned int n) {
     for (unsigned int i = 0; i < m; i++) free(solution[i]);
+    free(solution);
 
     isSolutionCreated = false;
 }
 
 // =====================================================================================================================
 
-bool isCaseFree(unsigned int x, unsigned int y) {
+bool isCellFree(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
     if (maze[x - 1][y] == 1 && maze[x][y - 1] == 1 && maze[x + 1][y] == 1 && maze[x][y + 1] == 1) {
         return true;
     } else {
@@ -105,31 +107,77 @@ bool isCaseFree(unsigned int x, unsigned int y) {
     }
 }
 
+bool isUpAvailable(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
+    bool isUpAvailable = false;
+    if (y > 1) {
+        if (isCellFree(maze, m, n, x, y - 2) == true) isUpAvailable = true;
+    }
+
+    return isUpAvailable;
+}
+
+bool isDownAvailable(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
+    bool isDownAvailable = false;
+    if (y < n - 2) {
+        if (isCellFree(maze, m, n, x, y + 2) == true) isDownAvailable = true;
+    }
+
+    return isDownAvailable;
+}
+
+bool isLeftAvailable(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
+    bool isLeftAvailable = false;
+    if (x > 1) {
+        if (isCellFree(maze, m, n, x - 2, y) == true) isLeftAvailable = true;
+    }
+
+    return isLeftAvailable;
+}
+
+bool isRightAvailable(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
+    bool isRightAvailable = false;
+    if (x < m - 2) {
+        if (isCellFree(maze, m, n, x + 2, y) == true) isRightAvailable = true;
+    }
+
+    return isRightAvailable;
+}
+
+bool isBlocked(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
+    bool isBlocked = true;
+
+    if (isUpAvailable(maze, m, n, x, y) == true
+    || isDownAvailable(maze, m, n, x, y) == true
+    || isLeftAvailable(maze, m, n, x, y) == true
+    || isRightAvailable(maze, m, n, x, y) == true) {
+        isBlocked = false;
+    }
+
+    return isBlocked;
+}
+
 void fillMaze() {
-    // printf("m:%u;n:%u", m, n);
     for (unsigned int i = 0; i < m; i++) {
         for (unsigned int j = 0; j < n; j++) {
             if (i % 2 == 1 && j % 2 == 1) {
-                if (isCaseFree(i, j) == true) {
+                if (isCellFree(maze, m, n, i, j) == true) {
+                    unsigned int direction = 0;
                     unsigned int x = i;
                     unsigned int y = j;
 
                     bool isRunning = true;
 
                     while (isRunning) {
-                        unsigned int direction = rand() % 4;
-
-                        /*
-                        printf("x:%u;y:%u\n", x, y);
-                        printf("%u\n", direction);
-                        getch();
-                        */
+                        unsigned int temp = direction;
+                        do { // Empèche le retour en arrière
+                            direction = rand() % 4;
+                        } while (direction == temp);
 
                         switch (direction) {
                         case 0: // Haut
                             if (y != 1) {
                                 maze[x][y - 1] = 0;
-                                if (isCaseFree(x, y - 2) == true) {
+                                if (isCellFree(maze, m, n, x, y - 2) == true) {
                                     y -= 2;
                                 } else {
                                     isRunning = false;
@@ -141,7 +189,7 @@ void fillMaze() {
                         case 1: // Bas
                             if (y != n - 2) {
                                 maze[x][y + 1] = 0;
-                                if (isCaseFree(x, y + 2) == true) {
+                                if (isCellFree(maze, m, n, x, y + 2) == true) {
                                     y += 2;
                                 } else {
                                     isRunning = false;
@@ -153,7 +201,7 @@ void fillMaze() {
                         case 2: // Gauche
                             if (x != 1) {
                                 maze[x - 1][y] = 0;
-                                if (isCaseFree(x - 2, y) == true) {
+                                if (isCellFree(maze, m, n, x - 2, y) == true) {
                                     x -= 2;
                                 } else {
                                     isRunning = false;
@@ -165,7 +213,7 @@ void fillMaze() {
                         case 3: // Droite
                             if (x != m - 2) {
                                 maze[x + 1][y] = 0;
-                                if (isCaseFree(x + 2, y) == true) {
+                                if (isCellFree(maze, m, n, x + 2, y) == true) {
                                     x += 2;
                                 } else {
                                     isRunning = false;
@@ -233,9 +281,9 @@ void clearTerminal() {
 }
 
 void resizeTerminal(unsigned int lines, unsigned int columns) {
-    char* lines_str = (char *) malloc(40 * sizeof(char));
+    char* lines_str = (char *) malloc(3 * sizeof(char));
     sprintf((char*) lines_str,"%d",lines);
-    char* columns_str = (char *) malloc(40 * sizeof(char));
+    char* columns_str = (char *) malloc(3 * sizeof(char));
     sprintf((char*) columns_str,"%d",columns);
 
     char* cmd = (char *) malloc(40 * sizeof(char));;
@@ -257,9 +305,9 @@ void setColor(unsigned int charColor, unsigned int backgroundColor) {
 
 int getch()
 {
-	system("stty raw -echo"); // system("stty ignbrk -echo"); // Paramétrage pour la saisie
+	system("stty raw -echo"); // Paramétrage pour la saisie
 	int key = getchar();
-	system("stty cooked echo"); // system("stty -ignbrk echo");
+	system("stty cooked echo");
 
 	return key;
 }
@@ -276,24 +324,24 @@ static void displayBorders(unsigned int longueur, unsigned int x, unsigned int y
     posX = x - 1;
     posY = y - 1;
     moveCursor(posX, posY);
-    printf("+"); // printf("%c", 201);
-    for(i = 0; i < longueur - 2; i++) printf("-"); // printf("%c", 205);
-    printf("+"); // printf("%c", 187);
+    printf("╔");
+    for(i = 0; i < longueur - 2; i++) printf("═");
+    printf("╗");
 
     posY++;
     moveCursor(posX, posY);
-    printf("|"); // printf("%c", 186);
+    printf("║");
 
     posX += longueur - 1;
     moveCursor(posX, posY);
-    printf("|"); // printf("%c", 186);
+    printf("║");
 
     posX = x - 1;
     posY++;
     moveCursor(posX, posY);
-    printf("+"); // printf("%c", 200);
-    for(i = 0; i < longueur - 2; i++) printf("-"); // printf("%c", 205);
-    printf("+"); // printf("%c", 188);
+    printf("╚");
+    for(i = 0; i < longueur - 2; i++) printf("═");
+    printf("╝");
     setColor(COLOR_FONT_DEFAULT, COLOR_BG);
 }
 
@@ -355,7 +403,7 @@ void displayMaze() {
         for (unsigned int i = 0; i < m; i++) {
             for (unsigned int j = 0; j < n; j++) {
                 moveCursor(upperLeftCornerX + 2 * i, upperLeftCornerY + j);
-                if (maze[i][j] == 1) printf("▓▓"); // []
+                if (maze[i][j] == 1) printf("▓▓");
                 else printf("  ");
             }
         }
@@ -372,7 +420,7 @@ void displaySolution() {
         for (unsigned int i = 0; i < m; i++) {
             for (unsigned int j = 0; j < n; j++) {
                 moveCursor(upperLeftCornerX + 2 * i, upperLeftCornerY + j);
-                if (solution[i][j] == 1) printf("██"); // <>
+                if (solution[i][j] == 1) printf("██");
             }
         }
         setColor(COLOR_FONT_DEFAULT, COLOR_BG);
@@ -383,7 +431,7 @@ void displaySolution() {
 
 void saveMaze(const char *filePath) {
     if (isMazeCreated == true) {
-        FILE* file = fopen(filePath, "w+");
+        FILE *file = fopen(filePath, "w+");
         
         if (file != NULL) {
             char c;
@@ -411,7 +459,7 @@ void saveMaze(const char *filePath) {
 }
 
 void loadMaze(const char *filePath) {
-    FILE* file = fopen(filePath, "r");
+    FILE *file = fopen(filePath, "r");
 
     if (file != NULL) {
         if (isMazeCreated == true) destroyMaze(m, n);
@@ -498,8 +546,6 @@ void loop() {
 
             // Détection de la touche pressée
             key = getch();
-            // if (key == 27) key = getch();
-            // if (key == 91) key = getch();
 
             if (key == KEY_UP) {
 				if (selectedOption == 1) selectedOption = optionNb;
