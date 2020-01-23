@@ -230,6 +230,78 @@ void fillMaze() {
     }
 }
 
+void createPath(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
+   int dir, count;
+   dir = rand() % 4;
+   count = 0;
+   bool indic =0;
+
+   while(count < 4){
+      // ensure that we are not on the wall and  we din't visit the cells then move
+
+       switch(dir)
+       { 
+           //left  
+        case 0:
+         if(y-1!=0 && y-2 !=0 && maze[x][y-1] ==1 && maze[x][y-2] == 1)
+           { 
+           maze[x][y-1] =0;
+           maze[x][y-2] = 0;
+           y=y-2;
+           indic=1;
+           }
+
+           break;
+           //down
+         case 1:  
+          if(x+1!=m && x+2 !=m && maze[x+2][y] ==1 && maze[x+1][y] == 1)
+           {
+              maze[x+1][y] =0;
+              maze[x+2][y] = 0; 
+              x=x+2;
+              indic=1;
+           }  
+               
+          break;
+          //right
+         case 2:  
+          if(y+1!=n && y+2!=n && maze[x ][y+1] ==1 && maze[x][y+2] == 1)
+          {
+              maze[x][y+1] =0;
+              maze[x][y+2] = 0;
+              y=y+2;
+              indic=1;
+          }   
+         
+          break;
+          //up
+         case 3 :
+          if(x-1!=0 && x-2!=0 && maze[x-1][y] ==1 && maze[x-2][y] == 1)
+          {
+             maze[x-1][y] =0;
+             maze[x-2][y] =0; 
+             x=x-2;
+             indic =1;
+          }
+
+         break;
+       }
+     // did we move if yes choose a random direction else try other remaining direction
+    if (indic==1)
+      {
+         dir = rand() % 4;
+         count = 0;
+         indic=0;   
+       
+      }
+    else 
+      {
+         dir = (dir + 1) % 4;
+         count += 1;
+      }
+    }
+}
+
 void generateMaze() {
     if (isMazeCreated == true) destroyMaze(m, n);
     if (isSolutionCreated == true) destroySolution(m, n);
@@ -237,21 +309,58 @@ void generateMaze() {
     setDimensions();
     createMaze(m, n);
 
+    // Initialisation
     for (unsigned int i = 0; i < m; i++) {
         for (unsigned int j = 0; j < n; j++) {
             if (i % 2 == 1 && j % 2 == 1) maze[i][j] = 0;
             else maze[i][j] = 1;
+            maze[i][j] = 1;
         }
     }
 
-    fillMaze();
+    // Remplissage
+    for (unsigned int x = 1; x < m; x += 2) {
+        for (unsigned int y = 1; y < n; y += 2) {
+            createPath(maze, m, n, x, y); 
+        }
+    }
 
     maze[0][1] = 0;
     maze[m - 1][n - 2] = 0;
 }
 
-void fillSolution() {
+bool fillSolution(bool **maze, bool **solution, unsigned int m, unsigned int n, unsigned int x, unsigned int y)
+{
+    // Si arrivé à la sortie
+    if ((x == m - 1) && (y == n - 2)) {
+        solution[x][y] = 1;
+
+        return 1;
+    }
     
+    // Si passage
+    if (x < m && y < n && solution[x][y] == 0 && maze[x][y] == 0) { 
+        solution[x][y] = 1;
+
+        // Bas
+        if (fillSolution(maze, solution, m, n, x + 1, y)) return 1;
+        
+        // Droite
+        if(fillSolution(maze ,solution, m, n, x , y + 1)) return 1;
+        
+        // Haut
+        if (fillSolution(maze, solution, m, n, x - 1, y)) return 1;
+        
+        // Gauche
+        if (fillSolution(maze, solution, m, n, x, y - 1)) return 1;
+        
+        // Bloqué : demi-tour
+        solution[x][y] = 0;
+
+        return 0;
+    }
+
+    return 0;
 }
 
 void solveMaze() {
@@ -266,7 +375,7 @@ void solveMaze() {
             }
         }
 
-        fillSolution();
+        fillSolution(maze, solution, m, n, 1, 1);
     }
 }
 
@@ -413,7 +522,7 @@ void displayMaze() {
 
 void displaySolution() {
     if (isSolutionCreated == true) {
-        int upperLeftCornerX = (WINDOW_WIDTH - MENU_WIDTH - m) / 2;
+        int upperLeftCornerX = (WINDOW_WIDTH - MENU_WIDTH - 2 * m) / 2;
         int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
 
         setColor(RED, COLOR_BG);
