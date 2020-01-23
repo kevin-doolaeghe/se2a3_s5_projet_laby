@@ -74,7 +74,7 @@ void createMaze(unsigned int m, unsigned int n) {
     isMazeCreated = true;
 }
 
-void destroyMaze(unsigned int m, unsigned int n) {
+void destroyMaze(unsigned int m) {
     for (unsigned int i = 0; i < m; i++) free(maze[i]);
     free(maze);
 
@@ -90,7 +90,7 @@ void createSolution(unsigned int m, unsigned int n) {
     isSolutionCreated = true;
 }
 
-void destroySolution(unsigned int m, unsigned int n) {
+void destroySolution(unsigned int m) {
     for (unsigned int i = 0; i < m; i++) free(solution[i]);
     free(solution);
 
@@ -99,212 +99,64 @@ void destroySolution(unsigned int m, unsigned int n) {
 
 // =====================================================================================================================
 
-bool isCellFree(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
-    if (maze[x - 1][y] == 1 && maze[x][y - 1] == 1 && maze[x + 1][y] == 1 && maze[x][y + 1] == 1) {
-        return true;
-    } else {
-        return false;
-    }
-}
+void createPath(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
+    unsigned int dir = rand() % 4;
+    unsigned int count = 0;
+    bool indic = 0;
 
-bool isUpAvailable(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
-    bool isUpAvailable = false;
-    if (y > 1) {
-        if (isCellFree(maze, m, n, x, y - 2) == true) isUpAvailable = true;
-    }
+    while (count < 4){
+        // ensure that we are not on the wall and  we din't visit the cells then move
 
-    return isUpAvailable;
-}
-
-bool isDownAvailable(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
-    bool isDownAvailable = false;
-    if (y < n - 2) {
-        if (isCellFree(maze, m, n, x, y + 2) == true) isDownAvailable = true;
-    }
-
-    return isDownAvailable;
-}
-
-bool isLeftAvailable(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
-    bool isLeftAvailable = false;
-    if (x > 1) {
-        if (isCellFree(maze, m, n, x - 2, y) == true) isLeftAvailable = true;
-    }
-
-    return isLeftAvailable;
-}
-
-bool isRightAvailable(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
-    bool isRightAvailable = false;
-    if (x < m - 2) {
-        if (isCellFree(maze, m, n, x + 2, y) == true) isRightAvailable = true;
-    }
-
-    return isRightAvailable;
-}
-
-bool isBlocked(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
-    bool isBlocked = true;
-
-    if (isUpAvailable(maze, m, n, x, y) == true
-    || isDownAvailable(maze, m, n, x, y) == true
-    || isLeftAvailable(maze, m, n, x, y) == true
-    || isRightAvailable(maze, m, n, x, y) == true) {
-        isBlocked = false;
-    }
-
-    return isBlocked;
-}
-
-void fillMaze() {
-    for (unsigned int i = 0; i < m; i++) {
-        for (unsigned int j = 0; j < n; j++) {
-            if (i % 2 == 1 && j % 2 == 1) {
-                if (isCellFree(maze, m, n, i, j) == true) {
-                    unsigned int direction = 0;
-                    unsigned int x = i;
-                    unsigned int y = j;
-
-                    bool isRunning = true;
-
-                    while (isRunning) {
-                        unsigned int temp = direction;
-                        do { // Empèche le retour en arrière
-                            direction = rand() % 4;
-                        } while (direction == temp);
-
-                        switch (direction) {
-                        case 0: // Haut
-                            if (y != 1) {
-                                maze[x][y - 1] = 0;
-                                if (isCellFree(maze, m, n, x, y - 2) == true) {
-                                    y -= 2;
-                                } else {
-                                    isRunning = false;
-                                }
-                            } else {
-                                isRunning = false;
-                            }
-                            break;
-                        case 1: // Bas
-                            if (y != n - 2) {
-                                maze[x][y + 1] = 0;
-                                if (isCellFree(maze, m, n, x, y + 2) == true) {
-                                    y += 2;
-                                } else {
-                                    isRunning = false;
-                                }
-                            } else {
-                                isRunning = false;
-                            }
-                            break;
-                        case 2: // Gauche
-                            if (x != 1) {
-                                maze[x - 1][y] = 0;
-                                if (isCellFree(maze, m, n, x - 2, y) == true) {
-                                    x -= 2;
-                                } else {
-                                    isRunning = false;
-                                }
-                            } else {
-                                isRunning = false;
-                            }
-                            break;
-                        case 3: // Droite
-                            if (x != m - 2) {
-                                maze[x + 1][y] = 0;
-                                if (isCellFree(maze, m, n, x + 2, y) == true) {
-                                    x += 2;
-                                } else {
-                                    isRunning = false;
-                                }
-                            } else {
-                                isRunning = false;
-                            }
-                            break;
-                        }
-                    }
-                }
+        switch (dir) {
+        case 0: // Gauche
+            if (y - 1 != 0 && y - 2 != 0 && maze[x][y - 1] ==1 && maze[x][y - 2] == 1) {
+                maze[x][y-1] = 0;
+                maze[x][y-2] = 0;
+                y = y - 2;
+                indic = 1;
             }
+            break;
+        case 1: // Bas
+            if (x + 1 != m && x + 2 != m && maze[x + 2][y] == 1 && maze[x + 1][y] == 1) {
+                maze[x+1][y] =0;
+                maze[x+2][y] = 0;
+                x=x+2;
+                indic=1;
+            }
+            break;
+        case 2: //Droite
+            if (y + 1 != n && y + 2 != n && maze[x][y + 1] == 1 && maze[x][y + 2] == 1) {
+                maze[x][y + 1] = 0;
+                maze[x][y + 2] = 0;
+                y = y + 2;
+                indic = 1;
+            }
+            break;
+        case 3: // Haut
+            if (x - 1 != 0 && x - 2 != 0 && maze[x - 1][y] == 1 && maze[x - 2][y] == 1) {
+                maze[x - 1][y] = 0;
+                maze[x - 2][y] = 0;
+                x = x - 2;
+                indic = 1;
+            }
+            break;
+        }
+
+        // did we move if yes choose a random direction else try other remaining direction
+        if (indic == 1) {
+            dir = rand() % 4;
+            count = 0;
+            indic = 0;
+        } else {
+            dir = (dir + 1) % 4;
+            count += 1;
         }
     }
 }
 
-void createPath(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
-   int dir, count;
-   dir = rand() % 4;
-   count = 0;
-   bool indic =0;
-
-   while(count < 4){
-      // ensure that we are not on the wall and  we din't visit the cells then move
-
-       switch(dir)
-       { 
-           //left  
-        case 0:
-         if(y-1!=0 && y-2 !=0 && maze[x][y-1] ==1 && maze[x][y-2] == 1)
-           { 
-           maze[x][y-1] =0;
-           maze[x][y-2] = 0;
-           y=y-2;
-           indic=1;
-           }
-
-           break;
-           //down
-         case 1:  
-          if(x+1!=m && x+2 !=m && maze[x+2][y] ==1 && maze[x+1][y] == 1)
-           {
-              maze[x+1][y] =0;
-              maze[x+2][y] = 0; 
-              x=x+2;
-              indic=1;
-           }  
-               
-          break;
-          //right
-         case 2:  
-          if(y+1!=n && y+2!=n && maze[x ][y+1] ==1 && maze[x][y+2] == 1)
-          {
-              maze[x][y+1] =0;
-              maze[x][y+2] = 0;
-              y=y+2;
-              indic=1;
-          }   
-         
-          break;
-          //up
-         case 3 :
-          if(x-1!=0 && x-2!=0 && maze[x-1][y] ==1 && maze[x-2][y] == 1)
-          {
-             maze[x-1][y] =0;
-             maze[x-2][y] =0; 
-             x=x-2;
-             indic =1;
-          }
-
-         break;
-       }
-     // did we move if yes choose a random direction else try other remaining direction
-    if (indic==1)
-      {
-         dir = rand() % 4;
-         count = 0;
-         indic=0;   
-       
-      }
-    else 
-      {
-         dir = (dir + 1) % 4;
-         count += 1;
-      }
-    }
-}
-
 void generateMaze() {
-    if (isMazeCreated == true) destroyMaze(m, n);
-    if (isSolutionCreated == true) destroySolution(m, n);
+    if (isMazeCreated == true) destroyMaze(m);
+    if (isSolutionCreated == true) destroySolution(m);
 
     setDimensions();
     createMaze(m, n);
@@ -364,7 +216,7 @@ bool fillSolution(bool **maze, bool **solution, unsigned int m, unsigned int n, 
 }
 
 void solveMaze() {
-    if (isSolutionCreated == true) destroySolution(m, n);
+    if (isSolutionCreated == true) destroySolution(m);
 
     if (isMazeCreated == true) {
         createSolution(m, n);
@@ -375,7 +227,7 @@ void solveMaze() {
             }
         }
 
-        fillSolution(maze, solution, m, n, 1, 1);
+        fillSolution(maze, solution, m, n, 0, 1);
     }
 }
 
@@ -571,8 +423,8 @@ void loadMaze(const char *filePath) {
     FILE *file = fopen(filePath, "r");
 
     if (file != NULL) {
-        if (isMazeCreated == true) destroyMaze(m, n);
-        if (isSolutionCreated == true) destroySolution(m, n);
+        if (isMazeCreated == true) destroyMaze(m);
+        if (isSolutionCreated == true) destroySolution(m);
 
         char c;
 
@@ -677,8 +529,8 @@ void run() {
 
     loop();
 
-    if (isMazeCreated == true) destroyMaze(m, n);
-    if (isSolutionCreated == true) destroySolution(m, n);
+    if (isMazeCreated == true) destroyMaze(m);
+    if (isSolutionCreated == true) destroySolution(m);
     setColor(WHITE, BLACK);
     clearTerminal();
 }
