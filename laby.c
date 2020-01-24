@@ -37,8 +37,6 @@ const unsigned int MENU_WIDTH = 30;
 const unsigned int MENU_HEIGHT = 13;
 const unsigned int MARGIN = 3;
 
-const char *FILE_PATH = "maze.save";
-
 unsigned int m; // Width
 unsigned int n; // Height
 bool **maze;
@@ -99,29 +97,32 @@ void destroySolution(unsigned int m) {
 
 // =====================================================================================================================
 
+/*
+ * God-Belange
+ */
+
 void createPath(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
-    unsigned int dir = rand() % 4;
+    unsigned int direction = rand() % 4;
     unsigned int count = 0;
-    bool indic = 0;
+    bool isMoving = false;
 
-    while (count < 4){
-        // ensure that we are not on the wall and  we din't visit the cells then move
-
-        switch (dir) {
+    while (count < 4) {
+        switch (direction) {
         case 0: // Gauche
+            // Si les cellules n'ont pas été visitées et qu'il n'y a pas de murs
             if (y - 1 != 0 && y - 2 != 0 && maze[x][y - 1] ==1 && maze[x][y - 2] == 1) {
-                maze[x][y-1] = 0;
-                maze[x][y-2] = 0;
+                maze[x][y - 1] = 0;
+                maze[x][y - 2] = 0;
                 y = y - 2;
-                indic = 1;
+                isMoving = true;
             }
             break;
         case 1: // Bas
             if (x + 1 != m && x + 2 != m && maze[x + 2][y] == 1 && maze[x + 1][y] == 1) {
-                maze[x+1][y] =0;
-                maze[x+2][y] = 0;
-                x=x+2;
-                indic=1;
+                maze[x + 1][y] =0;
+                maze[x + 2][y] = 0;
+                x = x + 2;
+                isMoving = true;
             }
             break;
         case 2: //Droite
@@ -129,7 +130,7 @@ void createPath(bool **maze, unsigned int m, unsigned int n, unsigned int x, uns
                 maze[x][y + 1] = 0;
                 maze[x][y + 2] = 0;
                 y = y + 2;
-                indic = 1;
+                isMoving = true;
             }
             break;
         case 3: // Haut
@@ -137,18 +138,17 @@ void createPath(bool **maze, unsigned int m, unsigned int n, unsigned int x, uns
                 maze[x - 1][y] = 0;
                 maze[x - 2][y] = 0;
                 x = x - 2;
-                indic = 1;
+                isMoving = true;
             }
             break;
         }
 
-        // did we move if yes choose a random direction else try other remaining direction
-        if (indic == 1) {
-            dir = rand() % 4;
+        if (isMoving == true) { // Si on s'est déplacé
+            direction = rand() % 4;
             count = 0;
-            indic = 0;
-        } else {
-            dir = (dir + 1) % 4;
+            isMoving = false;
+        } else { // Tente une autre direction
+            direction = (direction + 1) % 4;
             count += 1;
         }
     }
@@ -158,14 +158,13 @@ void generateMaze() {
     if (isMazeCreated == true) destroyMaze(m);
     if (isSolutionCreated == true) destroySolution(m);
 
+    // Génère m et n aléatoirement
     setDimensions();
     createMaze(m, n);
 
     // Initialisation
     for (unsigned int i = 0; i < m; i++) {
         for (unsigned int j = 0; j < n; j++) {
-            if (i % 2 == 1 && j % 2 == 1) maze[i][j] = 0;
-            else maze[i][j] = 1;
             maze[i][j] = 1;
         }
     }
@@ -177,6 +176,7 @@ void generateMaze() {
         }
     }
 
+    // Entrée et sortie
     maze[0][1] = 0;
     maze[m - 1][n - 2] = 0;
 }
@@ -198,7 +198,7 @@ bool fillSolution(bool **maze, bool **solution, unsigned int m, unsigned int n, 
         if (fillSolution(maze, solution, m, n, x + 1, y)) return 1;
         
         // Droite
-        if(fillSolution(maze ,solution, m, n, x , y + 1)) return 1;
+        if (fillSolution(maze ,solution, m, n, x , y + 1)) return 1;
         
         // Haut
         if (fillSolution(maze, solution, m, n, x - 1, y)) return 1;
@@ -221,12 +221,14 @@ void solveMaze() {
     if (isMazeCreated == true) {
         createSolution(m, n);
 
+        // Initialisation
         for (unsigned int i = 0; i < m; i++) {
             for (unsigned int j = 0; j < n; j++) {
                 solution[i][j] = 0;
             }
         }
 
+        // Recherche de la sortie
         fillSolution(maze, solution, m, n, 0, 1);
     }
 }
@@ -238,35 +240,44 @@ void solveMaze() {
  */
 
 void clearTerminal() {
-    system("clear");
+    system("clear"); // Efface l'écran
 }
 
 void resizeTerminal(unsigned int lines, unsigned int columns) {
-    char* lines_str = (char *) malloc(3 * sizeof(char));
-    sprintf((char*) lines_str,"%d",lines);
-    char* columns_str = (char *) malloc(3 * sizeof(char));
-    sprintf((char*) columns_str,"%d",columns);
+    // Redimensionne le terminal si il n'est pas en plein écran
 
-    char* cmd = (char *) malloc(40 * sizeof(char));;
+    // Convertie en caractère le nombre de lignes et de colonnes
+    char lines_str[10] = "";
+    sprintf(lines_str, "%d", lines);
+    char columns_str[10] = "";
+    sprintf(columns_str, "%d", columns);
+
+    // Fabrication de la commande
+    char* cmd = (char *) malloc(40 * sizeof(char));
     cmd = strcat(cmd, "resize -s ");
     cmd = strcat(cmd, lines_str);
     cmd = strcat(cmd, " ");
     cmd = strcat(cmd, columns_str);
 
+    // Envoi de la commande
 	system(cmd);
+
+    free(cmd);
 }
 
 void moveCursor(unsigned int x, unsigned int y) {
+    // Déplace le curseur à l'écran
     printf("\033[%d;%df", y, x);
 }
 
 void setColor(unsigned int charColor, unsigned int backgroundColor) {
+    // Change la couleur du caractère et du fond de caractère
     printf("\033[1;%dm""\033[1;%dm\n", charColor, backgroundColor + 10);
 }
 
 int getch()
 {
-	system("stty raw -echo"); // Paramétrage pour la saisie
+	system("stty raw -echo"); // Pas d'affichage des caractères
 	int key = getchar();
 	system("stty cooked echo");
 
@@ -275,8 +286,12 @@ int getch()
 
 // =====================================================================================================================
 
-static void displayBorders(unsigned int longueur, unsigned int x, unsigned int y)
-{
+/*
+ * Kevin
+ */
+
+static void displayBorders(unsigned int longueur, unsigned int x, unsigned int y) {
+    // Affichage d'un encadré
     unsigned int posX;
     unsigned int posY;
     unsigned int i;
@@ -328,6 +343,7 @@ void displayMenuOption(unsigned int x, unsigned int y, char* text) {
 }
 
 void displayMenu() {
+    // Calcul des coordonnées de l'emplacement du menu
     unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
     unsigned int upperLeftCornerY = (WINDOW_HEIGHT - MENU_HEIGHT) / 2;
 
@@ -339,15 +355,18 @@ void displayMenu() {
 }
 
 void displayMenuSelectionCursor(unsigned int selectedOption) {
+    // Affichage du curseur de sélection du menu
 	unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
     unsigned int upperLeftCornerY = (WINDOW_HEIGHT - MENU_HEIGHT) / 2;
 
     setColor(RED, COLOR_BG);
+    // Suppression de l'ancien curseur
     for (unsigned int i = 0; i < 5; i++) {
         moveCursor(upperLeftCornerX - 3, upperLeftCornerY + MARGIN * i);
         printf("  ");
     }
 
+    // Affichage du curseur
     moveCursor(upperLeftCornerX - 3, upperLeftCornerY + MARGIN * (selectedOption - 1));
     printf(">>");
     setColor(COLOR_FONT_DEFAULT, COLOR_BG);
@@ -361,11 +380,13 @@ void displayMaze() {
         int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
 
         setColor(GREEN, COLOR_BG);
+        // On parcourt le tableau
         for (unsigned int i = 0; i < m; i++) {
             for (unsigned int j = 0; j < n; j++) {
+                // On se place aux coordonnées d'une case pour l'afficher
                 moveCursor(upperLeftCornerX + 2 * i, upperLeftCornerY + j);
-                if (maze[i][j] == 1) printf("▓▓");
-                else printf("  ");
+                if (maze[i][j] == 1) printf("▓▓"); // Si mur
+                else printf("  "); // Si chemin
             }
         }
         setColor(COLOR_FONT_DEFAULT, COLOR_BG);
@@ -378,10 +399,12 @@ void displaySolution() {
         int upperLeftCornerY = (WINDOW_HEIGHT - n) / 2;
 
         setColor(RED, COLOR_BG);
+        // On parcourt le tableau de la solution
         for (unsigned int i = 0; i < m; i++) {
             for (unsigned int j = 0; j < n; j++) {
+                // Affichage de la solution
                 moveCursor(upperLeftCornerX + 2 * i, upperLeftCornerY + j);
-                if (solution[i][j] == 1) printf("██");
+                if (solution[i][j] == 1) printf("▒▒");
             }
         }
         setColor(COLOR_FONT_DEFAULT, COLOR_BG);
@@ -390,18 +413,38 @@ void displaySolution() {
 
 // =====================================================================================================================
 
-void saveMaze(const char *filePath) {
+void saveMaze() {
     if (isMazeCreated == true) {
-        FILE *file = fopen(filePath, "w+");
+        unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
+        unsigned int upperLeftCornerY = (WINDOW_HEIGHT - MENU_HEIGHT) / 2;
+        char path[20] = "";
+
+        // Saisie du nom du fichier
+        setColor(RED, COLOR_BG);
+        moveCursor(upperLeftCornerX, upperLeftCornerY + 2 * MARGIN + 1);
+        printf("Nom du fichier :");
+        moveCursor(upperLeftCornerX, upperLeftCornerY + 2 * MARGIN + 2);
+        if (fgets(path, 20, stdin) != NULL) {
+            char *posEnd = strchr(path, '\n');
+            if (posEnd != NULL) *posEnd = '\0';
+        }
+        setColor(COLOR_FONT_DEFAULT, COLOR_BG);
+
+        // Ouverture du fichier en écriture avec suppression du contenu précédent
+        // Création du fichier si il n'existe pas
+        FILE *file = fopen(path, "w+");
         
-        if (file != NULL) {
+        if (file != NULL) { // Si le fichier est ouvert
             char c;
 
+            // Ajout de m au fichier
             fputc(m, file);
             fputc('\n', file);
+            // Ajout de n au fichier
             fputc(n, file);
             fputc('\n', file);
 
+            // Ecriture du labyrinthe courant dans le fichier
             for (unsigned int i = 0; i < n; i++) {
                 for (unsigned int j = 0; j < m; j++) {
                     if (maze[j][i] == 1) c = '1';
@@ -412,32 +455,48 @@ void saveMaze(const char *filePath) {
                 fputc('\n', file);
             }
 
-            fclose(file);
-        } else {
-            // File not found
+            fclose(file); // Fermeture du fichier
         }
     }
 }
 
-void loadMaze(const char *filePath) {
-    FILE *file = fopen(filePath, "r");
+void loadMaze() {
+	unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
+    unsigned int upperLeftCornerY = (WINDOW_HEIGHT - MENU_HEIGHT) / 2;
+    char path[20] = {0};
 
-    if (file != NULL) {
+    // Saisie du nom du fichier
+    setColor(RED, COLOR_BG);
+    moveCursor(upperLeftCornerX, upperLeftCornerY + 3 * MARGIN + 1);
+    printf("Nom du fichier :");
+    moveCursor(upperLeftCornerX, upperLeftCornerY + 3 * MARGIN + 2);
+    if (fgets(path, 20, stdin) != NULL) {
+        char *posEnd = strchr(path, '\n');
+        if (posEnd != NULL) *posEnd = '\0';
+    }
+    setColor(COLOR_FONT_DEFAULT, COLOR_BG);
+
+    // Ouverture du fichier en mode lecture
+    FILE *file = fopen(path, "r");
+
+    if (file != NULL) { // Si fichier ouvert
         if (isMazeCreated == true) destroyMaze(m);
         if (isSolutionCreated == true) destroySolution(m);
 
         char c;
 
+        // Lecture de m
         while ((c = fgetc(file)) != '\n') {
             m = (unsigned int) c;
         }
-
+        // Lecture de n
         while ((c = fgetc(file)) != '\n') {
             n = (unsigned int) c;
         }
 
         createMaze(m, n);
 
+        // Lecture du labyrinthe
         for (unsigned int i = 0; i < n; i++) {
             for (unsigned int j = 0; j < m + 1; j++) {
                 c = fgetc(file);
@@ -447,15 +506,13 @@ void loadMaze(const char *filePath) {
         }
 
         fclose(file);
-    } else {
-        // File not found
     }
 }
 
 // =====================================================================================================================
 
 void handleEvents(unsigned int selectedOption) {
-    switch(selectedOption) {
+    switch(selectedOption) { // Effectue une action selon la sélection
         case 1:
             generateMaze();
             break;
@@ -463,10 +520,10 @@ void handleEvents(unsigned int selectedOption) {
             solveMaze();
             break;
         case 3:
-            saveMaze(FILE_PATH);
+            saveMaze();
             break;
         case 4:
-            loadMaze(FILE_PATH);
+            loadMaze();
             break;
     }
 }
@@ -477,8 +534,10 @@ void loop() {
     unsigned int selectedOption = 1;
     unsigned int optionNb = 5;
 
-    do
-    {
+    do {
+        /*
+         * AFFICHAGE
+         */
         setColor(COLOR_FONT_DEFAULT, COLOR_BG);
 
         // Nettoyage de l'écran
@@ -494,8 +553,10 @@ void loop() {
         displayMaze();
         displaySolution();
 
-        do // Boucle de détection des évènements
-        {
+        /*
+         * Boucle de détection des touches
+         */
+        do {
             // Affichage du curseur
             displayMenuSelectionCursor(selectedOption);
 
@@ -518,16 +579,18 @@ void loop() {
             }
         } while(key != KEY_ENTER); // Touche entrée
 
-        // Lancement de la fonction adéquate
+        /*
+         * Gestion des événements
+         */
         handleEvents(selectedOption);
     } while(selectedOption != optionNb); // Quitter
 }
 
 void run() {
-    resizeTerminal(WINDOW_HEIGHT, WINDOW_WIDTH);
     initRand();
+    resizeTerminal(WINDOW_HEIGHT, WINDOW_WIDTH);
 
-    loop();
+    loop(); // Boucle principale du programme
 
     if (isMazeCreated == true) destroyMaze(m);
     if (isSolutionCreated == true) destroySolution(m);

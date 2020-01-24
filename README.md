@@ -1,7 +1,9 @@
-# projet_laby
+# Programmation structurée - Projet
 
-God-Belange     >>  Génération, solution laby
-Kevin           >>  Affichage, I/O fichier
+Génération aléatoire de labyrinthes
+=========================
+Kevin           -  Interface Homme-Machine, sauvegarde et chargement
+God-Belange     -  Génération et résolution
 
 
 Prérequis
@@ -12,16 +14,21 @@ Utiliser la commande cd afin de se placer dans le dossier du fichier source
 Compiler le programme :
 =========================
 clang -W -Wall laby.c -o laby -lm
+ou
+gcc -W -Wall laby.c -o laby -lm
 
 
 Démarrer le programme :
 =========================
 ./laby
+Si les droits pour exécuter le programme sont insuffisants, utiliser la commande chmod.
+
 
 Utilisation :
 =========================
 Si le terminal, n'est pas en plein écran, la fenêtre sera redimensionnée.
 Pour naviguer dans le programme, il faut utiliser les touches directionnelles haut et bas ainsi que la touche entrée pour valider.
+
 
 Options :
 =========================
@@ -38,6 +45,7 @@ Charge le labyrinthe contenu dans le fichier "maze.save" qui se trouve dans le d
 Si un labyrinthe est enregistré dans un fichier renommé, il faut impérativement le renommé en "maze.save" pour qu'il soit lu.
 - Quitter :
 Quitte le programme.
+
 
 Exemple de fichier maze.save :
 =========================
