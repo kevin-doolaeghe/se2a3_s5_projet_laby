@@ -109,8 +109,8 @@ void createPath(bool **maze, unsigned int m, unsigned int n, unsigned int x, uns
     while (count < 4) {
         switch (direction) {
         case 0: // Gauche
-            // Si les cellules n'ont pas été visitées et qu'il n'y a pas de murs
-            if (y - 1 != 0 && y - 2 != 0 && maze[x][y - 1] ==1 && maze[x][y - 2] == 1) {
+            // Si la cellule se trouve dans le labyrinthe et est un mur
+            if (y - 1 != 0 && y - 2 != 0 && maze[x][y - 1] == 1 && maze[x][y - 2] == 1) {
                 maze[x][y - 1] = 0;
                 maze[x][y - 2] = 0;
                 y = y - 2;
