@@ -181,8 +181,7 @@ void generateMaze() {
     maze[m - 1][n - 2] = 0;
 }
 
-bool fillSolution(bool **maze, bool **solution, unsigned int m, unsigned int n, unsigned int x, unsigned int y)
-{
+bool fillSolution(bool **maze, bool **solution, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
     // Si arrivé à la sortie
     if ((x == m - 1) && (y == n - 2)) {
         solution[x][y] = 1;
@@ -275,8 +274,7 @@ void setColor(unsigned int charColor, unsigned int backgroundColor) {
     printf("\033[1;%dm""\033[1;%dm\n", charColor, backgroundColor + 10);
 }
 
-int getch()
-{
+int getch() {
 	system("stty raw -echo"); // Pas d'affichage des caractères
 	int key = getchar();
 	system("stty cooked echo");
@@ -290,7 +288,7 @@ int getch()
  * Kevin
  */
 
-static void displayBorders(unsigned int longueur, unsigned int x, unsigned int y) {
+void displayBorders(unsigned int longueur, unsigned int x, unsigned int y) {
     // Affichage d'un encadré
     unsigned int posX;
     unsigned int posY;
