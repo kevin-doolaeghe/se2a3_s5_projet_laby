@@ -459,7 +459,7 @@ void saveMaze() {
 }
 
 void loadMaze() {
-	unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
+    unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
     unsigned int upperLeftCornerY = (WINDOW_HEIGHT - MENU_HEIGHT) / 2;
     char path[20] = {0};
 
@@ -561,14 +561,14 @@ void loop() {
             // Curseur en haut à gauche de l'écran
             moveCursor(1, 1);
 
-			// 60 détections par seconde pour limiter l'utilisation du processeur
+            // 60 détections par seconde pour limiter l'utilisation du processeur
             usleep(16667);
 
             // Détection de la touche pressée
             key = getch();
 
             if (key == KEY_UP) {
-				if (selectedOption == 1) selectedOption = optionNb;
+                if (selectedOption == 1) selectedOption = optionNb;
                 else selectedOption -= 1;
             }
             if (key == KEY_DOWN) {
