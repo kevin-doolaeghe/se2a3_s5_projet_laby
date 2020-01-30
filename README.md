@@ -45,7 +45,7 @@ Pour les utiliser, il faut charger le fichier en entrant le nom dans le programm
 
 
 ## Exemple de fichier de sauvegarde :
-3\n
+3
 
 111111111111111111111111111111111111111111111111111
 000010000010000000100000100000000000000000000010001
