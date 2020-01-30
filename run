@@ -1,0 +1,2 @@
+clang -W -Wall laby.c -o laby -lm
+./laby
