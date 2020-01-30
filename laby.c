@@ -275,11 +275,11 @@ void setColor(unsigned int charColor, unsigned int backgroundColor) {
 }
 
 int getch() {
-	system("stty raw -echo"); // Pas d'affichage des caractères
-	int key = getchar();
-	system("stty cooked echo");
+    system("stty raw -echo"); // Pas d'affichage des caractères
+    int key = getchar();
+    system("stty cooked echo");
 
-	return key;
+    return key;
 }
 
 // =====================================================================================================================
