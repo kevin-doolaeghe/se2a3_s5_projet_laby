@@ -1,8 +1,14 @@
 # Programmation structurée - Projet
 
+
+
+
+
 ## Génération aléatoire de labyrinthes :
 Kevin			-  Interface Homme-Machine, sauvegarde et chargement
+
 God-Belange		-  Génération et résolution
+
 Date de création	-  24/01/2020
 
 ## Prérequis :
