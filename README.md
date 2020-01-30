@@ -1,31 +1,31 @@
 # Programmation structurée - Projet
 
-##Génération aléatoire de labyrinthes :
+## Génération aléatoire de labyrinthes :
 Kevin			-  Interface Homme-Machine, sauvegarde et chargement
 God-Belange		-  Génération et résolution
 Date de création	-  24/01/2020
 
-##Prérequis :
+## Prérequis :
 Utiliser la commande cd afin de se placer dans le dossier du fichier source
 
 
-##Compiler le programme :
+## Compiler le programme :
 clang -W -Wall laby.c -o laby -lm
 ou
 gcc -W -Wall laby.c -o laby -lm
 
 
-##Démarrer le programme :
+## Démarrer le programme :
 ./laby
 Si les droits pour exécuter le programme sont insuffisants, utiliser la commande chmod.
 
 
-##Utilisation :
+## Utilisation :
 Si le terminal, n'est pas en plein écran, la fenêtre sera redimensionnée.
 Pour naviguer dans le programme, il faut utiliser les touches directionnelles haut et bas ainsi que la touche entrée pour valider.
 
 
-##Options :
+## Options :
 * Générer :
 Génère un labyrinthe de taille aléatoire.
 * Résoudre :
@@ -39,12 +39,12 @@ Charge le labyrinthe contenu dans le fichier que vous avez choisi si celui-ci ex
 Quitte le programme.
 
 
-##Exemples fournis :
+## Exemples fournis :
 Les fichiers laby1, laby2 et laby3 sont des exemples de labyrinthes.
 Pour les utiliser, il faut charger le fichier en entrant le nom dans le programme avec l'option "Charger".
 
 
-##Exemple de fichier de sauvegarde :
+## Exemple de fichier de sauvegarde :
 3
 
 111111111111111111111111111111111111111111111111111
