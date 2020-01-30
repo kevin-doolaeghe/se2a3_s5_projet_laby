@@ -1,28 +1,25 @@
 # Programmation structurée - Projet
 
-## Génération aléatoire de labyrinthes :
-Kevin			-  Interface Homme-Machine, sauvegarde et chargement
+### Génération aléatoire de labyrinthes :
+**Kevin** - Interface Homme-Machine, sauvegarde et chargement
 
-God-Belange		-  Génération et résolution
+**God-Belange** - Génération et résolution
 
-Date de création	-  24/01/2020
+**Date de création** - 24/01/2020
 
 
-## Prérequis :
-Utiliser la commande cd afin de se placer dans le dossier du fichier source
+### Prérequis :
+Utiliser la commande **cd** afin de se placer dans le dossier du fichier source
 
 
 ## Compiler le programme :
-clang -W -Wall laby.c -o laby -lm
-
+**clang -W -Wall laby.c -o laby -lm**
 ou
-
-gcc -W -Wall laby.c -o laby -lm
+**gcc -W -Wall laby.c -o laby -lm**
 
 
 ## Démarrer le programme :
-./laby
-
+**./laby**
 Si les droits pour exécuter le programme sont insuffisants, utiliser la commande chmod.
 
 
@@ -33,25 +30,19 @@ Pour naviguer dans le programme, il faut utiliser les touches directionnelles ha
 
 
 ## Options :
-* Générer :
-Génère un labyrinthe de taille aléatoire.
-* Résoudre :
-Résoud le labyrinthe chargé en mémoire.
-* Sauver :
-Sauvegarde le labyrinthe courant dans un fichier dont vous choisissez le nom.
-La sauvegarde d'un labyrinthe écrase les données du fichier que vous avez choisi.
-* Charger :
-Charge le labyrinthe contenu dans le fichier que vous avez choisi si celui-ci existe.
-* Quitter :
-Quitte le programme.
+* **Générer** : Génère un labyrinthe de taille aléatoire.
+* **Résoudre** : Résoud le labyrinthe chargé en mémoire.
+* **Sauver** : Sauvegarde le labyrinthe courant dans un fichier dont vous choisissez le nom. La sauvegarde d'un labyrinthe écrase les données du fichier que vous avez choisi.
+* **Charger** : Charge le labyrinthe contenu dans le fichier que vous avez choisi si celui-ci existe.
+* **Quitter** : Quitte le programme.
 
 
-## Exemples fournis :
-Les fichiers laby1, laby2 et laby3 sont des exemples de labyrinthes.
+### Exemples fournis :
+Les fichiers **laby1**, **laby2** et **laby3** sont des exemples de labyrinthes.
 Pour les utiliser, il faut charger le fichier en entrant le nom dans le programme avec l'option "Charger".
 
 
-## Exemple de fichier de sauvegarde :
+### Exemple de fichier de sauvegarde :
 ```
 3
 
