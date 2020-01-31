@@ -51,10 +51,12 @@ bool isSolutionCreated = false;
  * =====================================================================================================================
  */
 
+// Initialise la génération de nombre aléatoire selon le temps courant
 void initRand() {
     srand(time(NULL));
 }
 
+// Les variables m et n sont initialisées aléatoirement
 void setDimensions() {
     m = rand() % 26 + 30; // rand() % 19 + 60
     n = rand() % 12 + 14; // rand() % 10 + 15
@@ -63,6 +65,7 @@ void setDimensions() {
     if (n % 2 == 0) n++;
 }
 
+// Le labyrinthe est alloué dynamiquement en mémoire à partir de m et n
 void createMaze(unsigned int m, unsigned int n) {
     maze = (bool **) malloc(m * sizeof(bool *)); // Columns
     for (unsigned int i = 0; i < m; i++) {
@@ -72,6 +75,7 @@ void createMaze(unsigned int m, unsigned int n) {
     isMazeCreated = true;
 }
 
+// Le labyrinthe est détruit de la mémoire
 void destroyMaze(unsigned int m) {
     for (unsigned int i = 0; i < m; i++) free(maze[i]);
     free(maze);
@@ -79,6 +83,7 @@ void destroyMaze(unsigned int m) {
     isMazeCreated = false;
 }
 
+// La solution du labyrinthe est allouée dynamiquement en mémoire à partir de m et n
 void createSolution(unsigned int m, unsigned int n) {
     solution = (bool **) malloc(m * sizeof(bool *));
     for (unsigned int i = 0; i < m; i++) {
@@ -88,6 +93,7 @@ void createSolution(unsigned int m, unsigned int n) {
     isSolutionCreated = true;
 }
 
+// La solution du labyrinthe est détruite de la mémoire
 void destroySolution(unsigned int m) {
     for (unsigned int i = 0; i < m; i++) free(solution[i]);
     free(solution);
@@ -101,6 +107,7 @@ void destroySolution(unsigned int m) {
  * God-Belange
  */
 
+// Un chemin est créé dans le labyrinthe
 void createPath(bool **maze, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
     unsigned int direction = rand() % 4;
     unsigned int count = 0;
@@ -154,6 +161,7 @@ void createPath(bool **maze, unsigned int m, unsigned int n, unsigned int x, uns
     }
 }
 
+// Initialise le labyrinthe et lance la génération de chemin
 void generateMaze() {
     if (isMazeCreated == true) destroyMaze(m);
     if (isSolutionCreated == true) destroySolution(m);
@@ -181,6 +189,7 @@ void generateMaze() {
     maze[m - 1][n - 2] = 0;
 }
 
+// Cherche la solution du labyrinthe et rempli la variable solution
 bool fillSolution(bool **maze, bool **solution, unsigned int m, unsigned int n, unsigned int x, unsigned int y) {
     // Si arrivé à la sortie
     if ((x == m - 1) && (y == n - 2)) {
@@ -214,6 +223,7 @@ bool fillSolution(bool **maze, bool **solution, unsigned int m, unsigned int n, 
     return 0;
 }
 
+// Initialise la solution et lance la recherche de solution
 void solveMaze() {
     if (isSolutionCreated == true) destroySolution(m);
 
@@ -238,10 +248,12 @@ void solveMaze() {
  * =====================================================================================================================
  */
 
+// Efface le terminal
 void clearTerminal() {
     system("clear"); // Efface l'écran
 }
 
+// Redimensionne le terminal
 void resizeTerminal(unsigned int lines, unsigned int columns) {
     // Redimensionne le terminal si il n'est pas en plein écran
 
@@ -264,16 +276,19 @@ void resizeTerminal(unsigned int lines, unsigned int columns) {
     free(cmd);
 }
 
+// Déplace le curseur à l’écran
 void moveCursor(unsigned int x, unsigned int y) {
     // Déplace le curseur à l'écran
     printf("\033[%d;%df", y, x);
 }
 
+// Change la couleur de caractère et du fond
 void setColor(unsigned int charColor, unsigned int backgroundColor) {
     // Change la couleur du caractère et du fond de caractère
     printf("\033[1;%dm""\033[1;%dm\n", charColor, backgroundColor + 10);
 }
 
+// Saisie une touche au clavier sans afficher la saisie et sans appuyer sur la touche entrée
 int getch() {
     system("stty raw -echo"); // Pas d'affichage des caractères
     int key = getchar();
@@ -288,6 +303,7 @@ int getch() {
  * Kevin
  */
 
+// Affiche un encadré aux coordonnées indiquées
 void displayBorders(unsigned int longueur, unsigned int x, unsigned int y) {
     // Affichage d'un encadré
     unsigned int posX;
@@ -319,6 +335,7 @@ void displayBorders(unsigned int longueur, unsigned int x, unsigned int y) {
     setColor(COLOR_FONT_DEFAULT, COLOR_BG);
 }
 
+// Affiche le titre
 void displayTitle() {
     char *title = " Projet labyrinthe ";
     unsigned int length = strlen(title);
@@ -333,6 +350,7 @@ void displayTitle() {
     displayBorders(length + 2, x, y);
 }
 
+// Affiche une option du menu
 void displayMenuOption(unsigned int x, unsigned int y, char* text) {
     setColor(BLUE, COLOR_BG);
     moveCursor(x, y);
@@ -340,6 +358,7 @@ void displayMenuOption(unsigned int x, unsigned int y, char* text) {
     setColor(COLOR_FONT_DEFAULT, COLOR_BG);
 }
 
+// Affiche le menu
 void displayMenu() {
     // Calcul des coordonnées de l'emplacement du menu
     unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
@@ -352,6 +371,7 @@ void displayMenu() {
     displayMenuOption(upperLeftCornerX, upperLeftCornerY + MARGIN * 4, "Quitter");
 }
 
+// Affiche le curseur courant du menu
 void displayMenuSelectionCursor(unsigned int selectedOption) {
     // Affichage du curseur de sélection du menu
 	unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
@@ -372,6 +392,7 @@ void displayMenuSelectionCursor(unsigned int selectedOption) {
 
 // =====================================================================================================================
 
+// Affiche le labyrinthe
 void displayMaze() {
     if (isMazeCreated == true) {
         int upperLeftCornerX = (WINDOW_WIDTH - MENU_WIDTH - 2 * m) / 2;
@@ -391,6 +412,7 @@ void displayMaze() {
     }
 }
 
+// Affiche la solution du labyrinthe
 void displaySolution() {
     if (isSolutionCreated == true) {
         int upperLeftCornerX = (WINDOW_WIDTH - MENU_WIDTH - 2 * m) / 2;
@@ -411,6 +433,7 @@ void displaySolution() {
 
 // =====================================================================================================================
 
+// Sauvegarde le labyrinthe dans un fichier
 void saveMaze() {
     if (isMazeCreated == true) {
         unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
@@ -458,6 +481,7 @@ void saveMaze() {
     }
 }
 
+// Charge un labyrinthe à partir d’un fichier
 void loadMaze() {
     unsigned int upperLeftCornerX = WINDOW_WIDTH - MENU_WIDTH + MARGIN;
     unsigned int upperLeftCornerY = (WINDOW_HEIGHT - MENU_HEIGHT) / 2;
@@ -509,6 +533,7 @@ void loadMaze() {
 
 // =====================================================================================================================
 
+// Gère les évènements selon la sélection
 void handleEvents(unsigned int selectedOption) {
     switch(selectedOption) { // Effectue une action selon la sélection
         case 1:
@@ -526,6 +551,7 @@ void handleEvents(unsigned int selectedOption) {
     }
 }
 
+// Boucle du programme
 void loop() {
     // Initialisation
     char key = 0;
@@ -584,6 +610,7 @@ void loop() {
     } while(selectedOption != optionNb); // Quitter
 }
 
+// Lance le programme
 void run() {
     initRand();
     resizeTerminal(WINDOW_HEIGHT, WINDOW_WIDTH);
@@ -602,6 +629,7 @@ void run() {
  * =====================================================================================================================
  */
 
+// Point d’entrée du programme
 int main() {
     run();
 
