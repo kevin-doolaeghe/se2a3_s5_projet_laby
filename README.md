@@ -1,28 +1,43 @@
 # Programmation structurée - Projet
 
 ### Génération aléatoire de labyrinthes :
+
 **Kevin** - Interface Homme-Machine, sauvegarde et chargement\
 **God-Belange** - Génération et résolution\
 **Date de création** - 24/01/2020
 
 ### Prérequis :
-Utiliser la commande **cd** afin de se placer dans le dossier du fichier source
+Utiliser la commande `cd` afin de se placer dans le dossier du fichier source
 
 ## Compiler le programme :
-**clang -W -Wall laby.c -o laby -lm**\
-ou\
-**gcc -W -Wall laby.c -o laby -lm**
+
+* Méthode n°1 :
+```
+clang -W -Wall laby.c -o laby -lm
+```
+
+* Méthode n°2 :
+```
+gcc -W -Wall laby.c -o laby -lm
+```
 
 ## Démarrer le programme :
-**./laby**\
-Si les droits pour exécuter le programme sont insuffisants, utiliser la commande chmod.
+
+```
+./laby
+```
+Si les droits pour exécuter le programme sont insuffisants, utiliser la commande `chmod`.
 
 ### Compilation et démarrage du programme
-Le fichier **run** peut être exécuté :\
-**./run**\
+
+Le fichier `run` peut être exécuté :
+```
+./run
+```
 Il permet de compiler puis de démarrer le programme.
 
 ## Utilisation :
+
 Si le terminal, n'est pas en plein écran, la fenêtre sera redimensionnée.\
 Pour naviguer dans le programme, il faut utiliser les touches directionnelles haut et bas ainsi que la touche entrée pour valider.
 
